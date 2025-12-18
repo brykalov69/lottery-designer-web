@@ -49,6 +49,10 @@ export default function Root() {
 
   return (
     <>
+   <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
+  This tool provides analytical insights only.
+  It does not predict lottery outcomes or guarantee winnings.
+</div>
       <NavTabs />
       <Routes>
         <Route path="/" element={<Generator aiRanges={aiRanges} />} />
