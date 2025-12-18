@@ -1,6 +1,6 @@
 // frontend/src/api/history.ts
 
-const API = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export async function uploadHistory(payload: {
     text: string;

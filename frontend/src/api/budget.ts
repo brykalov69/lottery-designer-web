@@ -1,5 +1,5 @@
 // frontend/src/api/budget.ts
-const API = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export async function runBudget(payload: any) {
     const res = await fetch(`${API}/budget`, {
