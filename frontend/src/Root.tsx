@@ -45,7 +45,7 @@ function NavTabs() {
 }
 
 export default function Root() {
-  const [aiRanges, setAiRanges] = useState<any>({});
+  const [aiRanges, _setAiRanges] = useState<any>({});
 
   return (
     <>
