@@ -8,7 +8,7 @@ export async function uploadHistory(payload: {
     main_count: number;
     extra_count: number;
 }) {
-    const res = await fetch(`${API}/upload_history`, {
+    const res = await fetch(`${API_BASE}/upload_history`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export async function uploadHistory(payload: {
 }
 
 export async function fetchHistory() {
-    const res = await fetch(`${API}/history`);
+    const res = await fetch(`${API_BASE}/history`);
     if (!res.ok) throw new Error("History fetch failed");
     return await res.json();
 }
