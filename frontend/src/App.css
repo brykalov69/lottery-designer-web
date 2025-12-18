@@ -1,0 +1,22 @@
+/* ================================
+   APP LAYOUT
+   LotteryDesigner – Release A
+================================ */
+
+.app-layout {
+  min-height: 100vh;
+  background: #1C1F26;
+}
+
+.app-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .app-content {
+    padding: 16px 14px 32px;
+  }
+}

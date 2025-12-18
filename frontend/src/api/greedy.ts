@@ -1,0 +1,13 @@
+// frontend/src/api/greedy.ts
+const API = "http://localhost:8000";
+
+export async function runGreedy(payload: any) {
+    const res = await fetch(`${API}/greedy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("Greedy request failed");
+    return res.json();
+}
