@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function AdjacencyScoreboard({ data }: { data?: any }) {
     if (!data || !data.adjacency_index) return null;
