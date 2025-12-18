@@ -28,7 +28,7 @@ export async function runBudget(payload: {
   numbers: number[];
   ticketCount: number;
 }) {
-  const res = await fetch(`${API_BASE}/ai_budget`, {
+  const res = await fetch(`${API_BASE}/budget`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
