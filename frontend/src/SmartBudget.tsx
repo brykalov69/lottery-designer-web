@@ -100,8 +100,8 @@ export default function SmartBudget() {
     <>
       <h1>Smart Budget</h1>
 <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Use Smart Budget to generate the best possible system
-  under a fixed limit (number of tickets or total budget).
+  Use Smart Budget to generate the system
+  under a fixed limit (number of tickets or total budget). <br />
   Best when your resources are strictly constrained.
 </p>
 
