@@ -135,6 +135,11 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   return (
     <>
       <h1>Lottery System Generator</h1>
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+        To start, enter at least 5 numbers. <br />
+        Allowed range: <strong>1 – 99</strong>.
+      </div>
+
 
       <DataInputPanel
         title={
