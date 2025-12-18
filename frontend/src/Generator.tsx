@@ -40,8 +40,8 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   const handleGenerate = async () => {
     setResult(null);
 
-    // ---- BASE NUMBERS (soft) ----
-    let baseNumbers: number[] | null = null;
+    // ---- BASE NUMBERS (SAFE DEFAULT) ----
+    let baseNumbers: number[];
 
     if (input.numbersInput.trim()) {
       const baseRes = parseNumberList(input.numbersInput, {
@@ -51,6 +51,9 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
 
       if (!baseRes.ok) return;
       baseNumbers = baseRes.numbers;
+    } else {
+      // Default base numbers if user input is empty
+      baseNumbers = [1, 2, 3, 4, 5, 6];
     }
 
     // ---- FIXED POSITIONS ----
@@ -98,13 +101,23 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
       }
     }
 
-    // ---- PAYLOAD ----
+    // ---- PAYLOAD (CANONICAL) ----
     const payload = {
-      numbers: baseNumbers, // null → backend fallback (1 2 3 4 5 6)
-      limit: input.limit ? parseInt(input.limit) : null,
+      numbers: baseNumbers,
+
+      limit:
+        input.limit && parseInt(input.limit) > 0
+          ? parseInt(input.limit)
+          : null,
+
       fixed_positions: fixedPositions,
       forced_numbers: forcedNumbers,
-      groups,
+
+      groups:
+        groups && Object.keys(groups).length > 0
+          ? groups
+          : null,
+
       group_limits:
         input.quotaA || input.quotaB || input.quotaC
           ? {
@@ -113,8 +126,13 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
               C: input.quotaC ? parseInt(input.quotaC) : undefined,
             }
           : null,
-      range_mode: input.rangeMode,
-      per_ball_ranges: input.perBallRanges,
+
+      range_mode: input.rangeMode || "global",
+
+      per_ball_ranges:
+        input.perBallRanges && Object.keys(input.perBallRanges).length > 0
+          ? input.perBallRanges
+          : null,
     };
 
     const out = await generateSystem(payload);
@@ -135,17 +153,17 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   return (
     <>
       <h1>Lottery System Generator</h1>
+
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         To start, enter at least 5 numbers. <br />
         Allowed range: <strong>1 – 99</strong>.
       </div>
 
-
       <DataInputPanel
         title={
           <>
             Base Numbers
-            <HelpTip text="Base numbers define the pool used to generate all combinations. Add more numbers to increase variety, or fewer to generate tighter systems." />
+            <HelpTip text="Base numbers define the pool used to generate all combinations." />
           </>
         }
         subtitle="Enter numbers manually"
@@ -158,7 +176,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         title={
           <>
             Fixed Position – Ball #1
-            <HelpTip text="Restricts which numbers may appear in the first position of each ticket. Useful for positional lotteries or structured systems." />
+            <HelpTip text="Restricts which numbers may appear in the first position." />
           </>
         }
         subtitle="Restrict possible values for the first ball"
@@ -171,13 +189,13 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         title={
           <>
             Forced Numbers
-            <HelpTip text="These numbers will appear in every generated combination. Use carefully — forcing too many numbers reduces diversity." />
+            <HelpTip text="These numbers will appear in every generated combination." />
           </>
         }
         subtitle="These numbers must appear in every combination"
         value={input.forcedInput}
         onChange={(v) => setInput({ forcedInput: v })}
-        hint="Optional. All generated tickets will include these numbers."
+        hint="Optional."
       />
 
       {/* GROUPS */}
@@ -185,11 +203,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         <div className="collapse-content">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>
             Groups
-            <HelpTip text="Optional number groups used to control how many numbers from each group appear in a ticket." />
-          </div>
-
-          <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 10 }}>
-            Optional number group filters (A / B / C)
+            <HelpTip text="Optional number groups used to control group balance." />
           </div>
 
           <div
@@ -205,25 +219,20 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
               onChange={(v) => setInput({ groupAInput: v })}
               placeholder="1 5 12"
               rows={1}
-              hint="Optional"
             />
-
             <DataInputPanel
               title="Group B"
               value={input.groupBInput}
               onChange={(v) => setInput({ groupBInput: v })}
               placeholder="7 9 22"
               rows={1}
-              hint="Optional"
             />
-
             <DataInputPanel
               title="Group C"
               value={input.groupCInput}
               onChange={(v) => setInput({ groupCInput: v })}
               placeholder="3 18 27"
               rows={1}
-              hint="Optional"
             />
           </div>
         </div>
