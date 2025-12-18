@@ -127,10 +127,11 @@ export default function Analytics() {
   return (
     <>
       <h1>Analytics</h1>
-<p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Analytics shows recurring number combinations found in historical draws.
-  These insights explain how Greedy and AI evaluate coverage and patterns.
-</p>
+<div style={{ color: "#C8CCD4", marginBottom: 12 }}>
+  Repeated combinations indicate stable historical patterns <br />
+  that can be reused as building blocks for your own systems.
+</div>
+
 
 
       <CollapseSection
