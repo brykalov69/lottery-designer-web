@@ -96,9 +96,11 @@ export default function AIQuality() {
   return (
     <>
       <h1>AI Quality</h1>
-      <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-        Evaluate the quality of AI-generated systems and compare optimization strategies.
-      </p>
+      <div style={{ color: "#C8CCD4", marginBottom: 12 }}>
+  AI Quality evaluates the structural strength of a system. <br />
+  It does not predict outcomes or guarantee results.
+</div>
+
 
       {/* LOAD SYSTEMS */}
       <CollapseSection title="Load Systems" defaultOpen>
