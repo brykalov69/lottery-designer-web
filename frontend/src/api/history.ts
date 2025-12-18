@@ -4,9 +4,11 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export async function uploadHistory(payload: {
   text: string;
-  fmt: string;          // "txt" | "csv" | "xlsx"
+  file_b64?: string | null;
+  filetype?: string | null;
   main_count: number;
   extra_count: number;
+  has_extra: boolean;
 }) {
   const res = await fetch(`${API_BASE}/history/apply`, {
     method: "POST",
@@ -16,12 +18,10 @@ export async function uploadHistory(payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("History upload failed");
-  return await res.json();
-}
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(t || "History upload failed");
+  }
 
-export async function fetchHistory() {
-  const res = await fetch(`${API_BASE}/history`);
-  if (!res.ok) throw new Error("History fetch failed");
   return await res.json();
 }
