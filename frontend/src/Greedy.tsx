@@ -81,7 +81,7 @@ export default function Greedy() {
       <h1>Greedy Optimizer</h1>
 <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
   Use Greedy Optimizer to maximize coverage of number triplets
-  with the smallest possible system.
+  with the smallest possible system. <br />
   Best when you want strong protection with limited tickets.
 </p>
 
