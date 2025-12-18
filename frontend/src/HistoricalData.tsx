@@ -192,7 +192,7 @@ export default function HistoricalData() {
     <>
       <h1>Historical Data</h1>
       <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Historical data defines the foundation for Analytics and AI.
+  Historical data is optional, but defines the foundation for Analytics and AI. <br />
   Only main balls are used in analysis and optimization.
 </p>
 
