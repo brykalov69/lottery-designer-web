@@ -103,25 +103,26 @@ export default function HistoricalData() {
     let fileB64: string | undefined;
 
     try {
-      if (file) {
-        const name = file.name.toLowerCase();
-        if (name.endsWith(".csv")) format = "CSV";
-        else if (name.endsWith(".xlsx")) format = "XLSX";
-        else format = "TXT";
+     if (file) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".csv")) format = "csv";
+  else if (name.endsWith(".xlsx")) format = "xlsx";
+  else format = "txt";
 
-        if (format === "XLSX") {
-          const buf = await file.arrayBuffer();
-          fileB64 = arrayBufferToBase64(buf);
-        } else {
-          textContent = await file.text();
-        }
-      } else if (pasteText.trim()) {
-        format = "PASTE / TXT";
-        textContent = pasteText;
-      } else {
-        setError("Please upload a file or paste history text.");
-        return;
-      }
+  if (format === "xlsx") {
+    const buf = await file.arrayBuffer();
+    fileB64 = arrayBufferToBase64(buf);
+  } else {
+    textContent = await file.text();
+  }
+} else if (pasteText.trim()) {
+  format = "txt";          // ✅ FIX
+  textContent = pasteText;
+} else {
+  setError("Please upload a file or paste history text.");
+  return;
+}
+
 
       setHistoryLoading();
 
