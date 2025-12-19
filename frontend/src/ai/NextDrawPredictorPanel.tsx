@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 type RankBreakdown = {
   frequency: number;
   positional: number;
@@ -41,10 +43,17 @@ export default function NextDrawPredictorPanel({ isPro }: { isPro: boolean }) {
 
     setLoading(true);
 
-    fetch("http://localhost:8000/ai_predictor")
-      .then((r) => r.json())
+    fetch(`${API_BASE}/ai_predictor`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => setData(json))
-      .catch(() => setData({ error: "Failed to load predictor." }))
+      .catch(() =>
+        setData({ error: "Failed to load predictor." })
+      )
       .finally(() => setLoading(false));
   }, [isPro, history.payload]);
 

@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 type Ticket = {
   ticket: number[];
@@ -30,13 +32,9 @@ export default function AITicketGeneratorPanel({ isPro }: { isPro: boolean }) {
   const [strategy, setStrategy] =
     useState<"balanced" | "conservative" | "exploratory">("balanced");
 
-  const url = useMemo(() => {
-    if (!isPro) {
-      return "http://localhost:8000/ai_ticket_generator?is_pro=false";
-    }
-    return `http://localhost:8000/ai_ticket_generator?is_pro=true&ticket_count=${ticketCount}&strategy=${strategy}`;
-  }, [isPro, ticketCount, strategy]);
-
+  // -------------------------------------------------
+  // LOAD PREVIEW (FREE)
+  // -------------------------------------------------
   useEffect(() => {
     if (!history.payload) {
       setData(null);
@@ -44,25 +42,39 @@ export default function AITicketGeneratorPanel({ isPro }: { isPro: boolean }) {
       return;
     }
 
-    // preview request (FREE)
     if (!isPro) {
       setLoading(true);
-      fetch(url)
-        .then((r) => r.json())
+      fetch(`${API_BASE}/ai_ticket_generator?is_pro=false`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+          }
+          return res.json();
+        })
         .then((json) => setData(json))
         .catch(() =>
           setData({ error: "Failed to load ticket generator preview." })
         )
         .finally(() => setLoading(false));
     }
-  }, [history.payload, isPro, url]);
+  }, [history.payload, isPro]);
 
+  // -------------------------------------------------
+  // GENERATE (PRO)
+  // -------------------------------------------------
   const generate = () => {
     if (!isPro || !history.payload) return;
 
     setLoading(true);
-    fetch(url)
-      .then((r) => r.json())
+    fetch(
+      `${API_BASE}/ai_ticket_generator?is_pro=true&ticket_count=${ticketCount}&strategy=${strategy}`
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => setData(json))
       .catch(() =>
         setData({ error: "Failed to generate AI tickets." })

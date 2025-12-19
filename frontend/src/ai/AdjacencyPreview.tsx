@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 type Follower = {
   from: number;
   to: number;
@@ -29,19 +31,27 @@ export default function AdjacencyPreview({ isPro }: { isPro: boolean }) {
     setLoading(true);
     setError(null);
 
-    fetch("http://localhost:8000/ai_adjacency")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) {
-          setError(d.error);
+    fetch(`${API_BASE}/ai_adjacency?is_pro=${isPro}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((json) => {
+        if (json?.error) {
+          setError(json.error);
           setData(null);
         } else {
-          setData(d);
+          setData(json);
         }
       })
-      .catch(() => setError("Failed to load adjacency data"))
+      .catch(() => {
+        setError("Failed to load adjacency data.");
+        setData(null);
+      })
       .finally(() => setLoading(false));
-  }, [history.payload]);
+  }, [history.payload, isPro]);
 
   if (!history.payload) {
     return (
@@ -73,7 +83,9 @@ export default function AdjacencyPreview({ isPro }: { isPro: boolean }) {
       >
         <b>Last Draw</b>
         <div style={{ marginTop: 6 }}>
-          {data.last_draw.join(", ")}
+          {Array.isArray(data.last_draw)
+            ? data.last_draw.join(", ")
+            : "—"}
         </div>
       </div>
 

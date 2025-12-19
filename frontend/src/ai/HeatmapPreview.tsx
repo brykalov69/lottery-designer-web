@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 type Segment = {
   id: number;
   range: [number, number];
@@ -25,19 +27,27 @@ export default function HeatmapPreview({ isPro }: { isPro: boolean }) {
     setLoading(true);
     setError(null);
 
-    fetch("http://localhost:8000/ai_heatmap")
-      .then((r) => r.json())
+    fetch(`${API_BASE}/ai_heatmap?is_pro=${isPro}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        if (data.error) {
+        if (data?.error) {
           setError(data.error);
           setSegments([]);
         } else {
           setSegments(data.segments || []);
         }
       })
-      .catch(() => setError("Failed to load heatmap"))
+      .catch(() => {
+        setError("Failed to load heatmap");
+        setSegments([]);
+      })
       .finally(() => setLoading(false));
-  }, [history.payload]);
+  }, [history.payload, isPro]);
 
   if (!history.payload) {
     return (

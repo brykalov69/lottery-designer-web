@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 type PatternSignals = {
   frequency: number;
@@ -33,11 +35,6 @@ export default function AIRecommendedPatternsPanel({ isPro }: { isPro: boolean }
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const url = useMemo(() => {
-    const qp = isPro ? "is_pro=true" : "is_pro=false";
-    return `http://localhost:8000/ai_patterns?${qp}`;
-  }, [isPro]);
-
   useEffect(() => {
     if (!history.payload) {
       setData(null);
@@ -47,14 +44,19 @@ export default function AIRecommendedPatternsPanel({ isPro }: { isPro: boolean }
 
     setLoading(true);
 
-    fetch(url)
-      .then((r) => r.json())
+    fetch(`${API_BASE}/ai_patterns?is_pro=${isPro}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => setData(json))
       .catch(() =>
         setData({ error: "Failed to load AI patterns." })
       )
       .finally(() => setLoading(false));
-  }, [url, history.payload]);
+  }, [isPro, history.payload]);
 
   // -------------------------
   // EMPTY STATE

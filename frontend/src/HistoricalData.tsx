@@ -8,7 +8,8 @@ import type { HistoryPayload } from "./stores/historyStore";
 import HelpTip from "./components/HelpTip";
 
 
-const API = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = "";
@@ -124,7 +125,7 @@ export default function HistoricalData() {
 
       setHistoryLoading();
 
-      const res = await fetch(`${API}/history/apply`, {
+      const res = await fetch(`${API_BASE}/history/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
