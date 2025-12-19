@@ -144,7 +144,7 @@ def apply_history(req: HistoryApplyRequest):
         result = apply_history_service(
             text=req.text,
             file_b64=req.file_b64,
-            filetype=req.filetype.upper(),
+            filetype=req.filetype.lower(),
             main_count=req.main_count,
             extra_count=req.extra_count,
             has_extra=req.has_extra,
