@@ -130,8 +130,8 @@ export default function HistoricalData() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: textContent || null, //fix
-          file_b64: fileB64 ?? null, //fix
+          text: textContent || "", //fix
+          file_b64: fileB64 ?? "", //fix
           filetype: format.toLowerCase(),
           main_count: mainBalls,
           extra_count: hasExtra ? 1 : 0,
