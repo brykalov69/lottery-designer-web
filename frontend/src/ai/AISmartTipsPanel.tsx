@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useHistoryStore } from "../stores/historyStore";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 type Tip = {
   type: "strength" | "caution" | "balance" | "conflict" | "guidance";
   message: string;
@@ -67,8 +69,13 @@ export default function AISmartTipsPanel({ isPro }: { isPro: boolean }) {
 
     setLoading(true);
 
-    fetch("http://localhost:8000/ai_smart_tips")
-      .then((r) => r.json())
+    fetch(`${API_BASE}/ai_smart_tips`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then((json) => setData(json))
       .catch(() =>
         setData({ error: "Failed to load AI Smart Tips." })
