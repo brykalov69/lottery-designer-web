@@ -139,7 +139,12 @@ export default function HistoricalData() {
         }),
       });
 
-      if (!res.ok) throw new Error("Backend failed to parse history.");
+      if (!res.ok) {
+  const errText = await res.text();
+  console.error("History apply backend response:", errText);
+  throw new Error(errText || `HTTP ${res.status}`);
+}
+
 
       const data = await res.json();
       const rows = data.rows || [];
