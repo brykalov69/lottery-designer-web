@@ -10,7 +10,12 @@ import GreedyPage from "./Greedy";
 import SmartBudget from "./SmartBudget";
 import AIQuality from "./AIQuality";
 
-// внутри Root.tsx
+import ProModal from "./components/ProModal";
+import { useSessionStore } from "./stores/useSessionStore";
+
+// -----------------------------
+// NAV TABS
+// -----------------------------
 function NavTabs() {
   const location = useLocation();
 
@@ -44,16 +49,25 @@ function NavTabs() {
   );
 }
 
+// -----------------------------
+// ROOT
+// -----------------------------
 export default function Root() {
   const [aiRanges] = useState<any>({});
 
+  // 🔑 PRO MODAL STATE
+  const { proModal, closeProModal } = useSessionStore();
+
   return (
     <>
-   <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
-  This tool provides analytical insights only.
-  It does not predict lottery outcomes or guarantee winnings.
-</div>
+      {/* Global disclaimer */}
+      <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
+        This tool provides analytical insights only.
+        It does not predict lottery outcomes or guarantee winnings.
+      </div>
+
       <NavTabs />
+
       <Routes>
         <Route path="/" element={<Generator aiRanges={aiRanges} />} />
         <Route path="/history" element={<HistoricalData />} />
@@ -63,6 +77,13 @@ export default function Root() {
         <Route path="/budget" element={<SmartBudget />} />
         <Route path="/ai_quality" element={<AIQuality />} />
       </Routes>
+
+      {/* 🔓 PRO MODAL (GLOBAL) */}
+      <ProModal
+        open={proModal.open}
+        reason={proModal.reason}
+        onClose={closeProModal}
+      />
     </>
   );
 }

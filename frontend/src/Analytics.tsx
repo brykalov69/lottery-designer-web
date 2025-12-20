@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CollapseSection from "./components/CollapseSection";
 import { useHistoryStore } from "./stores/historyStore";
+import { useSessionStore } from "./stores/useSessionStore";
 import HelpTip from "./components/HelpTip";
 
 type Tab = "triplets" | "quads" | "quints";
@@ -34,6 +35,9 @@ function combosK(arr: number[], k: number): number[][] {
 export default function Analytics() {
   const navigate = useNavigate();
   const { history } = useHistoryStore();
+
+  // 🔑 PRO MODAL (TEST)
+  const { openProModal } = useSessionStore();
 
   const [tab, setTab] = useState<Tab>("triplets");
   const [limit, setLimit] = useState<number>(20);
@@ -138,7 +142,10 @@ export default function Analytics() {
       <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
         {description}
       </p>
-      <button className="btn btn-secondary">
+      <button
+        className="btn btn-secondary"
+        onClick={() => openProModal("analytics_quints")}
+      >
         🔒 Unlock PRO
       </button>
     </div>
@@ -147,6 +154,16 @@ export default function Analytics() {
   return (
     <>
       <h1>Analytics</h1>
+
+      {/* 🔒 TEST BUTTON — REMOVE AFTER TEST */}
+     <button
+  className="btn btn-secondary"
+  style={{ opacity: 0.6, marginBottom: 8 }}
+  onClick={() => openProModal("analytics_quints")}
+>
+  🔒 Test PRO Modal (dev)
+</button>
+
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         Analytics identify number combinations that appeared together

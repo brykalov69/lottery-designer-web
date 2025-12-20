@@ -1,10 +1,27 @@
-// useSessionStore.ts
-
 import { useSyncExternalStore } from "react";
 
 /* =========================
    TYPES
 ========================= */
+
+/* ---------- PRO MODAL ---------- */
+
+export type ProModalReason =
+  | "analytics_quads"
+  | "analytics_quints"
+  | "greedy_fast"
+  | "greedy_hybrid"
+  | "budget_money"
+  | "ai_insights"
+  | "ai_quality"
+  | "generic";
+
+export type ProModalState = {
+  open: boolean;
+  reason?: ProModalReason;
+};
+
+/* ---------- HISTORY ---------- */
 
 export type HistorySlice = {
   rows: any[];
@@ -97,8 +114,10 @@ export type AISlice = {
 
 export type SessionState = {
   isPro: boolean;
-  history: HistorySlice;
 
+  proModal: ProModalState;
+
+  history: HistorySlice;
   generator: GeneratorSlice;
   greedy: GreedySlice;
   budget: BudgetSlice;
@@ -112,11 +131,19 @@ export type SessionState = {
 const initialState: SessionState = {
   isPro: false,
 
-  history: { rows: [], loaded: false },
+  proModal: {
+    open: false,
+    reason: undefined,
+  },
+
+  history: {
+    rows: [],
+    loaded: false,
+  },
 
   generator: {
     input: {
-      numbersInput: " 1 2 3 4 5 6",
+      numbersInput: "1 2 3 4 5 6",
       limit: "",
 
       fixedFirstInput: "",
@@ -161,7 +188,11 @@ const initialState: SessionState = {
     error: null,
   },
 
-  ai: { source: null, system: null, status: "idle" },
+  ai: {
+    source: null,
+    system: null,
+    status: "idle",
+  },
 };
 
 /* =========================
@@ -194,7 +225,10 @@ export function useSessionStore() {
   /* ---------- HISTORY ---------- */
 
   const setHistory = (rows: any[]) => {
-    state = { ...state, history: { rows, loaded: true } };
+    state = {
+      ...state,
+      history: { rows, loaded: true },
+    };
     emitChange();
   };
 
@@ -214,10 +248,7 @@ export function useSessionStore() {
   const setGeneratorResult = (result: GeneratorResult | null) => {
     state = {
       ...state,
-      generator: {
-        ...state.generator,
-        result,
-      },
+      generator: { ...state.generator, result },
     };
     emitChange();
   };
@@ -225,9 +256,7 @@ export function useSessionStore() {
   const clearGenerator = () => {
     state = {
       ...state,
-      generator: {
-        ...initialState.generator,
-      },
+      generator: initialState.generator,
     };
     emitChange();
   };
@@ -254,7 +283,10 @@ export function useSessionStore() {
   };
 
   const setGreedyStatus = (status: GreedySlice["status"]) => {
-    state = { ...state, greedy: { ...state.greedy, status } };
+    state = {
+      ...state,
+      greedy: { ...state.greedy, status },
+    };
     emitChange();
   };
 
@@ -301,12 +333,36 @@ export function useSessionStore() {
     source: "greedy" | "budget";
     system: number[][];
   }) => {
-    state = { ...state, ai: { ...payload, status: "ready" } };
+    state = {
+      ...state,
+      ai: { ...payload, status: "ready" },
+    };
     emitChange();
   };
 
   const clearAI = () => {
-    state = { ...state, ai: { source: null, system: null, status: "idle" } };
+    state = {
+      ...state,
+      ai: { source: null, system: null, status: "idle" },
+    };
+    emitChange();
+  };
+
+  /* ---------- PRO MODAL ---------- */
+
+  const openProModal = (reason: ProModalReason = "generic") => {
+    state = {
+      ...state,
+      proModal: { open: true, reason },
+    };
+    emitChange();
+  };
+
+  const closeProModal = () => {
+    state = {
+      ...state,
+      proModal: { open: false, reason: undefined },
+    };
     emitChange();
   };
 
@@ -341,6 +397,10 @@ export function useSessionStore() {
     // AI
     setAIInput,
     clearAI,
+
+    // PRO modal
+    openProModal,
+    closeProModal,
 
     setIsPro,
   };
