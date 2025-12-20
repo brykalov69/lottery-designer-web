@@ -96,9 +96,10 @@ export default function AIQuality() {
   return (
     <>
       <h1>AI Quality</h1>
-      <div style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  AI Quality evaluates the structural strength of a system. <br />
-  It does not predict outcomes or guarantee results.
+    <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+  AI Quality evaluates the structural properties of generated systems.<br />
+  It does not measure winning probability
+  and does not provide recommendations.
 </div>
 
 

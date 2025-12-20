@@ -25,12 +25,18 @@ export default function AI() {
     <>
       <h1>AI Insights Suite</h1>
       <p>Your advanced analytical and predictive AI tools.</p>
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+  AI Insights analyze historical data to highlight structural patterns
+  and statistical signals.<br />
+  They do not predict future outcomes and do not guarantee winnings.
+</div>
+
 
       {/* 🧠 AI SUMMARY */}
       <AISummary />
 
       {/* 🔍 GLOBAL FREQUENCY — FREE */}
-      <CollapseSection title="Global Frequency (FREE)" defaultOpen>
+            <CollapseSection title="Global Frequency (FREE)" defaultOpen>
         <GlobalFrequencyCards />
       </CollapseSection>
 
@@ -71,6 +77,12 @@ export default function AI() {
           Load historical data to unlock AI analysis.
         </p>
       )}
+      <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 16 }}>
+  AI insights provide analytical observations
+  based on historical data.<br />
+  They are not recommendations
+  and should not be interpreted as predictions.
+</div>
     </>
   );
 }

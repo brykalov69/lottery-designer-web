@@ -1,5 +1,3 @@
-// SmartBudget.tsx
-
 import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
@@ -34,6 +32,14 @@ export default function SmartBudget() {
     }
     session.setBudgetInput({ mode });
   };
+
+  const budgetValue = Number(input.budget);
+  const ticketCostValue = Number(input.ticketCost);
+  const smallBudget =
+    input.mode === "money" &&
+    budgetValue > 0 &&
+    ticketCostValue > 0 &&
+    budgetValue < ticketCostValue * 5;
 
   /* =========================
      RUN
@@ -99,12 +105,14 @@ export default function SmartBudget() {
   return (
     <>
       <h1>Smart Budget</h1>
-<p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Use Smart Budget to generate the system
-  under a fixed limit (number of tickets or total budget). <br />
-  Best when your resources are strictly constrained.
-</p>
 
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+        Smart Budget helps allocate your budget efficiently
+        across generated systems.<br />
+        It does not increase winning odds.
+        It helps control how many tickets you play
+        and how much you spend.
+      </div>
 
       <CollapseSection title="Base Numbers" defaultOpen>
         <textarea
@@ -119,19 +127,18 @@ export default function SmartBudget() {
       </CollapseSection>
 
       <CollapseSection
-  title={
-    <>
-      Optimization Mode
-      <HelpTip
-        text="Choose how the system is constrained.
+        title={
+          <>
+            Optimization Mode
+            <HelpTip
+              text="Choose how the system is constrained.
 By Ticket Count: fixed number of tickets.
 By Budget (PRO): fixed total budget and ticket cost."
-      />
-    </>
-  }
-  defaultOpen
->
-
+            />
+          </>
+        }
+        defaultOpen
+      >
         <div style={{ display: "flex", gap: 8 }}>
           <button
             className={input.mode === "count" ? "btn btn-primary" : "btn"}
@@ -172,33 +179,48 @@ By Budget (PRO): fixed total budget and ticket cost."
         )}
 
         {input.mode === "money" && (
-          <div style={{ display: "flex", gap: 16 }}>
-            <label>
-              Total budget:
-              <input
-                type="number"
-                min={1}
-                value={input.budget}
-                onChange={(e) =>
-                  session.setBudgetInput({ budget: e.target.value })
-                }
-                style={{ width: 120, marginLeft: 8 }}
-              />
-            </label>
+          <>
+            <div style={{ display: "flex", gap: 16 }}>
+              <label>
+                Total budget:
+                <input
+                  type="number"
+                  min={1}
+                  value={input.budget}
+                  onChange={(e) =>
+                    session.setBudgetInput({ budget: e.target.value })
+                  }
+                  style={{ width: 120, marginLeft: 8 }}
+                />
+              </label>
 
-            <label>
-              Ticket cost:
-              <input
-                type="number"
-                min={1}
-                value={input.ticketCost}
-                onChange={(e) =>
-                  session.setBudgetInput({ ticketCost: e.target.value })
-                }
-                style={{ width: 120, marginLeft: 8 }}
-              />
-            </label>
-          </div>
+              <label>
+                Ticket cost:
+                <input
+                  type="number"
+                  min={1}
+                  value={input.ticketCost}
+                  onChange={(e) =>
+                    session.setBudgetInput({ ticketCost: e.target.value })
+                  }
+                  style={{ width: 120, marginLeft: 8 }}
+                />
+              </label>
+            </div>
+
+            {/* B12 — ticket price region note */}
+            <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 4 }}>
+              Ticket prices vary by lottery and region.
+              Ensure the ticket cost matches your local lottery.
+            </div>
+
+            {/* B11 — small budget warning */}
+            {smallBudget && (
+              <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+                With very small budgets, coverage improvements may be limited.
+              </div>
+            )}
+          </>
         )}
       </CollapseSection>
 
@@ -208,26 +230,28 @@ By Budget (PRO): fixed total budget and ticket cost."
         </button>
 
         {budget.error && (
-          <p style={{ color: "#e74c3c", marginTop: 8 }}>{budget.error}</p>
+          <p style={{ color: "#e74c3c", marginTop: 8 }}>
+            {budget.error}
+          </p>
         )}
       </CollapseSection>
 
       {result && (
         <CollapseSection title="Results" defaultOpen>
           {result.coverage !== undefined && (
-  <p>
-    <strong>
-      Coverage
-      <HelpTip
-        text="Coverage here is a secondary indicator.
+            <p>
+              <strong>
+                Coverage
+                <HelpTip
+                  text="Coverage here is a secondary indicator.
 Smart Budget prioritizes respecting the chosen limits,
 not maximizing coverage."
-      />
-      :
-    </strong>{" "}
-    {result.coverage.toFixed(2)}%
-  </p>
-)}
+                />
+                :
+              </strong>{" "}
+              {result.coverage.toFixed(2)}%
+            </p>
+          )}
 
           <p>
             <strong>System size:</strong> {result.system.length}
@@ -246,6 +270,11 @@ not maximizing coverage."
               />
             }
           />
+
+          {/* B13 — disclaimer */}
+          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 10 }}>
+            Budget optimization does not guarantee winnings.
+          </div>
         </CollapseSection>
       )}
     </>

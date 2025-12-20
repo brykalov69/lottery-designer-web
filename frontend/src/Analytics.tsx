@@ -1,14 +1,14 @@
-// Analytics.tsx
-
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CollapseSection from "./components/CollapseSection";
 import { useHistoryStore } from "./stores/historyStore";
 import HelpTip from "./components/HelpTip";
 
-
 type Tab = "triplets" | "quads" | "quints";
 type ComboCount = [number[], number];
+
+// Soft Launch: PRO disabled
+const isPro = false;
 
 function combosK(arr: number[], k: number): number[][] {
   const res: number[][] = [];
@@ -57,7 +57,7 @@ export default function Analytics() {
     );
   }
 
-  // 🔑 ONLY MAIN BALLS FOR ANALYTICS
+  // ONLY MAIN BALLS
   const draws = history.payload.draws.map((d) => d.main);
 
   const comboStats = useMemo(() => {
@@ -85,15 +85,13 @@ export default function Analytics() {
     const toArray = (m: Map<string, number>): ComboCount[] => {
       const arr: ComboCount[] = Array.from(m.entries())
         .map(([k, v]) => [k.split(",").map(Number), v] as ComboCount)
-        // show only 2+ occurrences
         .filter(([, count]) => count >= 2);
 
       arr.sort((a, b) =>
         sortOrder === "asc" ? a[1] - b[1] : b[1] - a[1]
       );
 
-      const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 0;
-      return safeLimit ? arr.slice(0, safeLimit) : arr;
+      return limit > 0 ? arr.slice(0, limit) : arr;
     };
 
     return {
@@ -124,30 +122,39 @@ export default function Analytics() {
     </div>
   );
 
+  const renderEmptyWarning = () => (
+    <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 8 }}>
+      No repeated combinations found.<br />
+      This is normal for smaller or highly diverse datasets.
+    </div>
+  );
+
+  const renderProGate = (title: string, description: string) => (
+    <div
+      className="collapse-card"
+      style={{ textAlign: "center", padding: 20 }}
+    >
+      <h3>{title}</h3>
+      <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
+        {description}
+      </p>
+      <button className="btn btn-secondary">
+        🔒 Unlock PRO
+      </button>
+    </div>
+  );
+
   return (
     <>
       <h1>Analytics</h1>
-<div style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Repeated combinations indicate stable historical patterns <br />
-  that can be reused as building blocks for your own systems.
-</div>
 
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+        Analytics identify number combinations that appeared together
+        multiple times in historical draws.<br />
+        Only main balls are analyzed. Bonus or extra balls are ignored.
+      </div>
 
-
-      <CollapseSection
-  title={
-    <>
-      View
-      <HelpTip
-        text="Triplets show 3-number combinations that repeat in history.
-Greedy Optimizer maximizes coverage of these triplets.
-Quads and Quints provide deeper analytical insight."
-      />
-    </>
-  }
-  defaultOpen
->
-
+      <CollapseSection title="View" defaultOpen>
         <button
           className={`btn ${
             tab === "triplets" ? "btn-active" : "btn-secondary"
@@ -155,7 +162,9 @@ Quads and Quints provide deeper analytical insight."
           onClick={() => setTab("triplets")}
         >
           Triplets
+          <HelpTip text="Triplets are combinations of 3 numbers that appeared together more than once." />
         </button>
+
         <button
           className={`btn ${
             tab === "quads" ? "btn-active" : "btn-secondary"
@@ -163,7 +172,9 @@ Quads and Quints provide deeper analytical insight."
           onClick={() => setTab("quads")}
         >
           Quads
+          <HelpTip text="Quads are rare 4-number combinations and are available in PRO." />
         </button>
+
         <button
           className={`btn ${
             tab === "quints" ? "btn-active" : "btn-secondary"
@@ -171,6 +182,7 @@ Quads and Quints provide deeper analytical insight."
           onClick={() => setTab("quints")}
         >
           Quints
+          <HelpTip text="Quints are very rare 5-number patterns available in PRO." />
         </button>
       </CollapseSection>
 
@@ -197,23 +209,39 @@ Quads and Quints provide deeper analytical insight."
         </select>
       </CollapseSection>
 
-      <CollapseSection
-  title={
-    <>
-      Results
-      <HelpTip
-        text="These combinations are extracted from historical draws.
-They highlight frequently recurring patterns,
-not future predictions."
-      />
-    </>
-  }
-  defaultOpen
->
+      <CollapseSection title="Results" defaultOpen>
+        {/* B7 — general hint */}
+        <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
+          Limited historical data or active filters may reduce available results.
+        </div>
 
-        {tab === "triplets" && renderCards(comboStats.triplets)}
-        {tab === "quads" && renderCards(comboStats.quads)}
-        {tab === "quints" && renderCards(comboStats.quints)}
+        {/* Triplets (FREE) */}
+        {tab === "triplets" &&
+          (comboStats.triplets.length > 0
+            ? renderCards(comboStats.triplets)
+            : renderEmptyWarning())}
+
+        {/* Quads (PRO) */}
+        {tab === "quads" &&
+          (isPro
+            ? comboStats.quads.length > 0
+              ? renderCards(comboStats.quads)
+              : renderEmptyWarning()
+            : renderProGate(
+                "Quads (PRO)",
+                "4-number combinations appear much less frequently and provide deeper structural insight."
+              ))}
+
+        {/* Quints (PRO) */}
+        {tab === "quints" &&
+          (isPro
+            ? comboStats.quints.length > 0
+              ? renderCards(comboStats.quints)
+              : renderEmptyWarning()
+            : renderProGate(
+                "Quints (PRO)",
+                "5-number patterns are extremely rare and represent the strongest analytical signals."
+              ))}
       </CollapseSection>
     </>
   );

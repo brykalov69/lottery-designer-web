@@ -79,11 +79,13 @@ export default function Greedy() {
   return (
     <>
       <h1>Greedy Optimizer</h1>
-<p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-  Use Greedy Optimizer to maximize coverage of number triplets
-  with the smallest possible system. <br />
-  Best when you want strong protection with limited tickets.
-</p>
+<div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+  Greedy Optimizer builds compact systems that maximize coverage
+  of repeated number combinations.<br />
+  It does not predict outcomes. Its goal is to cover as many
+  important patterns as possible using the smallest number of tickets.
+</div>
+
 
 
       {/* INPUT NUMBERS */}
@@ -160,6 +162,10 @@ Hybrid (PRO): balance between speed and coverage."
         >
           {greedy.status === "running" ? "Running..." : "Run Greedy"}
         </button>
+        <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+  Greedy optimization works best when historical data is loaded.
+</div>
+
 
         {greedy.error && (
           <p style={{ color: "#ff6b6b", marginTop: 8 }}>

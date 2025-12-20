@@ -1,6 +1,4 @@
-// frontend/src/Generator.tsx
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
@@ -23,6 +21,11 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   const setResult = session.setGeneratorResult;
 
   // -----------------------------
+  // UI WARNINGS (B)
+  // -----------------------------
+  const [showGroupWarning, setShowGroupWarning] = useState(false);
+
+  // -----------------------------
   // AI → Generator
   // -----------------------------
   useEffect(() => {
@@ -39,6 +42,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
   const handleGenerate = async () => {
     setResult(null);
+    setShowGroupWarning(false);
 
     // ---- BASE NUMBERS (SAFE DEFAULT) ----
     let baseNumbers: number[];
@@ -52,7 +56,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
       if (!baseRes.ok) return;
       baseNumbers = baseRes.numbers;
     } else {
-      // Default base numbers if user input is empty
+      // Default base numbers
       baseNumbers = [1, 2, 3, 4, 5, 6];
     }
 
@@ -98,6 +102,21 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         };
       } catch {
         return;
+      }
+    }
+
+    // ---- B2: GROUPS OUTSIDE BASE WARNING ----
+    if (groups) {
+      const baseSet = new Set(baseNumbers);
+      const allGroupNumbers = [
+        ...(groups.A || []),
+        ...(groups.B || []),
+        ...(groups.C || []),
+      ];
+
+      const hasOutside = allGroupNumbers.some((n) => !baseSet.has(n));
+      if (hasOutside) {
+        setShowGroupWarning(true);
       }
     }
 
@@ -155,15 +174,18 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
       <h1>Lottery System Generator</h1>
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
-        To start, enter at least 5 numbers. <br />
-        Allowed range: <strong>1 – 99</strong>.
+        To start, enter at least 5 numbers.<br />
+        Allowed range: <strong>1–99</strong>.<br /><br />
+        If no numbers are entered, a default example system is generated
+        to demonstrate how the tool works.
       </div>
 
       <DataInputPanel
         title={
           <>
             Base Numbers
-            <HelpTip text="Base numbers define the pool used to generate all combinations." />
+            <HelpTip text="Base Numbers define the main pool used to generate combinations.
+Add more numbers to increase variety, or fewer to generate tighter systems." />
           </>
         }
         subtitle="Enter numbers manually"
@@ -203,7 +225,14 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         <div className="collapse-content">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>
             Groups
-            <HelpTip text="Optional number groups used to control group balance." />
+            <HelpTip
+              text={
+                "Groups are filters, not independent number pools.\n\n" +
+                "Base Numbers define the generation pool.\n" +
+                "Groups only apply to numbers already present in Base Numbers.\n\n" +
+                "If Base Numbers are provided, group numbers outside Base will be ignored."
+              }
+            />
           </div>
 
           <div
@@ -267,20 +296,36 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         </button>
 
         {result && (
-          <DataInputPanel
-            title="Generated Combinations"
-            subtitle={`Total combinations: ${result.count}`}
-            value={resultText}
-            onChange={() => {}}
-            readOnly
-            rows={10}
-            footer={
-              <ExportPanel
-                rows={result.combinations}
-                filename="generated_system"
-              />
-            }
-          />
+          <>
+            <DataInputPanel
+              title="Generated Combinations"
+              subtitle={`Total combinations: ${result.count}`}
+              value={resultText}
+              onChange={() => {}}
+              readOnly
+              rows={10}
+              footer={
+                <ExportPanel
+                  rows={result.combinations}
+                  filename="generated_system"
+                />
+              }
+            />
+
+            {/* B1 — Sequential exclusion info */}
+            <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+              Some highly sequential combinations were excluded
+              to improve diversity.
+            </div>
+
+            {/* B2 — Groups outside base */}
+            {showGroupWarning && (
+              <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 4 }}>
+                Some group numbers are not present in Base Numbers
+                and were ignored.
+              </div>
+            )}
+          </>
         )}
       </CollapseSection>
     </>
