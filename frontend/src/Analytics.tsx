@@ -8,9 +8,6 @@ import HelpTip from "./components/HelpTip";
 type Tab = "triplets" | "quads" | "quints";
 type ComboCount = [number[], number];
 
-// Soft Launch: PRO disabled
-const isPro = false;
-
 function combosK(arr: number[], k: number): number[][] {
   const res: number[][] = [];
   const n = arr.length;
@@ -36,8 +33,8 @@ export default function Analytics() {
   const navigate = useNavigate();
   const { history } = useHistoryStore();
 
-  // 🔑 PRO MODAL (TEST)
-  const { openProModal } = useSessionStore();
+  // 🔑 PRO STATE
+  const { isPro, openProModal } = useSessionStore();
 
   const [tab, setTab] = useState<Tab>("triplets");
   const [limit, setLimit] = useState<number>(20);
@@ -133,7 +130,11 @@ export default function Analytics() {
     </div>
   );
 
-  const renderProGate = (title: string, description: string) => (
+  const renderProGate = (
+    title: string,
+    description: string,
+    reason: "analytics_quads" | "analytics_quints"
+  ) => (
     <div
       className="collapse-card"
       style={{ textAlign: "center", padding: 20 }}
@@ -144,7 +145,7 @@ export default function Analytics() {
       </p>
       <button
         className="btn btn-secondary"
-        onClick={() => openProModal("analytics_quints")}
+        onClick={() => openProModal(reason)}
       >
         🔒 Unlock PRO
       </button>
@@ -155,15 +156,16 @@ export default function Analytics() {
     <>
       <h1>Analytics</h1>
 
-      {/* 🔒 TEST BUTTON — REMOVE AFTER TEST */}
-     <button
-  className="btn btn-secondary"
-  style={{ opacity: 0.6, marginBottom: 8 }}
-  onClick={() => openProModal("analytics_quints")}
->
-  🔒 Test PRO Modal (dev)
-</button>
-
+      {/* 🔒 DEV TEST BUTTON (LOCAL ONLY) */}
+      {import.meta.env.DEV && (
+        <button
+          className="btn btn-secondary"
+          style={{ opacity: 0.6, marginBottom: 8 }}
+          onClick={() => openProModal("analytics_quads")}
+        >
+          🔒 Test PRO Modal (dev)
+        </button>
+      )}
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         Analytics identify number combinations that appeared together
@@ -227,7 +229,6 @@ export default function Analytics() {
       </CollapseSection>
 
       <CollapseSection title="Results" defaultOpen>
-        {/* B7 — general hint */}
         <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
           Limited historical data or active filters may reduce available results.
         </div>
@@ -246,7 +247,8 @@ export default function Analytics() {
               : renderEmptyWarning()
             : renderProGate(
                 "Quads (PRO)",
-                "4-number combinations appear much less frequently and provide deeper structural insight."
+                "4-number combinations appear much less frequently and provide deeper structural insight.",
+                "analytics_quads"
               ))}
 
         {/* Quints (PRO) */}
@@ -257,7 +259,8 @@ export default function Analytics() {
               : renderEmptyWarning()
             : renderProGate(
                 "Quints (PRO)",
-                "5-number patterns are extremely rare and represent the strongest analytical signals."
+                "5-number patterns are extremely rare and represent the strongest analytical signals.",
+                "analytics_quints"
               ))}
       </CollapseSection>
     </>

@@ -7,17 +7,14 @@ import { useSessionStore } from "./stores/useSessionStore";
 
 export default function SmartBudget() {
   const session = useSessionStore();
-  const { budget, isPro } = session;
+  const { budget, isPro, openProModal } = session;
+
   const input = budget.input;
   const result = budget.result;
 
   /* =========================
      HELPERS
   ========================= */
-
-  const requirePro = () => {
-    alert("Money-based optimization is a PRO feature.");
-  };
 
   const parseNumbers = (): number[] =>
     input.numbersInput
@@ -27,7 +24,7 @@ export default function SmartBudget() {
 
   const setMode = (mode: "count" | "money") => {
     if (mode === "money" && !isPro) {
-      requirePro();
+      openProModal("budget_money");
       return;
     }
     session.setBudgetInput({ mode });
@@ -35,6 +32,8 @@ export default function SmartBudget() {
 
   const budgetValue = Number(input.budget);
   const ticketCostValue = Number(input.ticketCost);
+
+  // B11 — small budget warning
   const smallBudget =
     input.mode === "money" &&
     budgetValue > 0 &&
@@ -72,6 +71,11 @@ export default function SmartBudget() {
       }
 
       if (input.mode === "money") {
+        if (!isPro) {
+          openProModal("budget_money");
+          return;
+        }
+
         const b = Number(input.budget);
         const c = Number(input.ticketCost);
         if (!b || !c) {
@@ -114,6 +118,7 @@ export default function SmartBudget() {
         and how much you spend.
       </div>
 
+      {/* BASE NUMBERS */}
       <CollapseSection title="Base Numbers" defaultOpen>
         <textarea
           value={input.numbersInput}
@@ -126,6 +131,7 @@ export default function SmartBudget() {
         />
       </CollapseSection>
 
+      {/* MODE SELECTION */}
       <CollapseSection
         title={
           <>
@@ -141,7 +147,11 @@ By Budget (PRO): fixed total budget and ticket cost."
       >
         <div style={{ display: "flex", gap: 8 }}>
           <button
-            className={input.mode === "count" ? "btn btn-primary" : "btn"}
+            className={
+              input.mode === "count"
+                ? "btn btn-primary"
+                : "btn"
+            }
             onClick={() => setMode("count")}
           >
             By Ticket Count
@@ -151,9 +161,7 @@ By Budget (PRO): fixed total budget and ticket cost."
             className={
               input.mode === "money"
                 ? "btn btn-primary"
-                : isPro
-                ? "btn"
-                : "btn btn-disabled"
+                : "btn"
             }
             onClick={() => setMode("money")}
           >
@@ -162,6 +170,7 @@ By Budget (PRO): fixed total budget and ticket cost."
         </div>
       </CollapseSection>
 
+      {/* PARAMETERS */}
       <CollapseSection title="Budget Parameters" defaultOpen>
         {input.mode === "count" && (
           <label>
@@ -171,7 +180,9 @@ By Budget (PRO): fixed total budget and ticket cost."
               min={1}
               value={input.ticketCount}
               onChange={(e) =>
-                session.setBudgetInput({ ticketCount: e.target.value })
+                session.setBudgetInput({
+                  ticketCount: e.target.value,
+                })
               }
               style={{ width: 100, marginLeft: 8 }}
             />
@@ -188,7 +199,9 @@ By Budget (PRO): fixed total budget and ticket cost."
                   min={1}
                   value={input.budget}
                   onChange={(e) =>
-                    session.setBudgetInput({ budget: e.target.value })
+                    session.setBudgetInput({
+                      budget: e.target.value,
+                    })
                   }
                   style={{ width: 120, marginLeft: 8 }}
                 />
@@ -201,7 +214,9 @@ By Budget (PRO): fixed total budget and ticket cost."
                   min={1}
                   value={input.ticketCost}
                   onChange={(e) =>
-                    session.setBudgetInput({ ticketCost: e.target.value })
+                    session.setBudgetInput({
+                      ticketCost: e.target.value,
+                    })
                   }
                   style={{ width: 120, marginLeft: 8 }}
                 />
@@ -224,6 +239,7 @@ By Budget (PRO): fixed total budget and ticket cost."
         )}
       </CollapseSection>
 
+      {/* RUN */}
       <CollapseSection title="Run Budget Optimizer" defaultOpen>
         <button className="btn btn-primary" onClick={run}>
           Run Smart Budget
@@ -236,6 +252,7 @@ By Budget (PRO): fixed total budget and ticket cost."
         )}
       </CollapseSection>
 
+      {/* RESULTS */}
       {result && (
         <CollapseSection title="Results" defaultOpen>
           {result.coverage !== undefined && (
@@ -254,7 +271,8 @@ not maximizing coverage."
           )}
 
           <p>
-            <strong>System size:</strong> {result.system.length}
+            <strong>System size:</strong>{" "}
+            {result.system.length}
           </p>
 
           <DataInputPanel

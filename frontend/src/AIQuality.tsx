@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CollapseSection from "./components/CollapseSection";
-import { useSessionStore } from "./stores/sessionStore";
+import { useSessionStore } from "./stores/useSessionStore";
 
 import SingleSystemQuality from "./ai/quality/SingleSystemQuality";
 import CompareSystems from "./ai/quality/CompareSystems";
@@ -15,7 +15,7 @@ type Metrics = {
 };
 
 // -------------------------------------
-// REAL (but simple) frontend metrics
+// SIMPLE FRONTEND METRICS (STRUCTURAL)
 // -------------------------------------
 
 function computeMetrics(system: number[][]): Metrics {
@@ -74,12 +74,10 @@ function computeMetrics(system: number[][]): Metrics {
 }
 
 export default function AIQuality() {
-  const session = useSessionStore();
+  const { isPro, openProModal, greedy, budget } = useSessionStore();
 
-  const isPro = session.isPro === true;
-
-  const greedyResult = session.greedy?.result?.system ?? null;
-  const budgetResult = session.budget?.result?.system ?? null;
+  const greedyResult = greedy?.result?.system ?? null;
+  const budgetResult = budget?.result?.system ?? null;
 
   const [greedySystem, setGreedySystem] = useState<number[][] | null>(null);
   const [budgetSystem, setBudgetSystem] = useState<number[][] | null>(null);
@@ -96,12 +94,12 @@ export default function AIQuality() {
   return (
     <>
       <h1>AI Quality</h1>
-    <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
-  AI Quality evaluates the structural properties of generated systems.<br />
-  It does not measure winning probability
-  and does not provide recommendations.
-</div>
 
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+        AI Quality evaluates the structural properties of generated systems.<br />
+        It does not measure winning probability
+        and does not provide recommendations.
+      </div>
 
       {/* LOAD SYSTEMS */}
       <CollapseSection title="Load Systems" defaultOpen>
@@ -153,7 +151,7 @@ export default function AIQuality() {
         </CollapseSection>
       )}
 
-      {/* PRO — COMPARE */}
+      {/* PRO — COMPARISON */}
       <CollapseSection title="Compare Greedy vs Budget (PRO)">
         {isPro ? (
           greedySystem && budgetSystem ? (
@@ -173,11 +171,25 @@ export default function AIQuality() {
             </p>
           )
         ) : (
-          <p style={{ color: "#C8CCD4" }}>
-            🔒 Unlock PRO to compare Greedy vs Budget systems and understand trade-offs.
-          </p>
+          <div style={{ textAlign: "center", padding: 12 }}>
+            <p style={{ color: "#C8CCD4", marginBottom: 10 }}>
+              Unlock PRO to compare Greedy vs Budget systems,
+              evaluate trade-offs and receive an AI verdict.
+            </p>
+            <button
+              className="btn btn-secondary"
+              onClick={() => openProModal("ai_quality")}
+            >
+              🔒 Unlock PRO
+            </button>
+          </div>
         )}
       </CollapseSection>
+
+      <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 16 }}>
+        Quality analysis evaluates structural balance,
+        not outcome probability.
+      </div>
     </>
   );
 }

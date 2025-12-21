@@ -1,83 +1,176 @@
 import CollapseSection from "./CollapseSection";
 
+type ProReason =
+  | "analytics_quads"
+  | "analytics_quints"
+  | "greedy_fast"
+  | "greedy_hybrid"
+  | "budget_money"
+  | "ai_insights"
+  | "ai_quality"
+  | "generic";
+
 type ProModalProps = {
   open: boolean;
-  reason?: string;
+  reason?: ProReason;
   onClose: () => void;
 };
 
-const REASONS: Record<string, { title: string; features: string[] }> = {
+/* =========================
+   CONTENT MAP
+========================= */
+
+const PRO_CONTENT: Record<
+  ProReason,
+  { title: string; bullets: string[] }
+> = {
   analytics_quads: {
-    title: "Advanced Analytics",
-    features: [
-      "Quads (4-number combinations)",
-      "Quints (5-number combinations)",
-      "Rare pattern frequency analysis",
+    title: "Advanced Analytics (PRO)",
+    bullets: [
+      "4-number combination frequency",
+      "Rare structural patterns",
+      "Deeper historical insight",
+    ],
+  },
+  analytics_quints: {
+    title: "Deep Pattern Analysis (PRO)",
+    bullets: [
+      "5-number rare patterns",
+      "Strongest historical signals",
+      "High-value analytical insight",
     ],
   },
   greedy_fast: {
-    title: "Advanced Greedy Optimizer",
-    features: [
-      "Fast optimization mode",
-      "Hybrid optimization strategy",
-      "Deeper coverage trade-off analysis",
+    title: "Greedy Optimizer — Advanced Modes (PRO)",
+    bullets: [
+      "Fast optimization strategy",
+      "Hybrid heuristic optimization",
+      "Improved coverage efficiency",
+    ],
+  },
+  greedy_hybrid: {
+    title: "Greedy Optimizer — Advanced Modes (PRO)",
+    bullets: [
+      "Fast optimization strategy",
+      "Hybrid heuristic optimization",
+      "Improved coverage efficiency",
     ],
   },
   budget_money: {
-    title: "Smart Budget (Money Mode)",
-    features: [
-      "Optimize by total budget",
-      "Ticket cost awareness",
-      "Spend control insights",
+    title: "Smart Budget — Money Mode (PRO)",
+    bullets: [
+      "Optimize systems by total budget",
+      "Account for ticket cost",
+      "Controlled spending strategies",
     ],
   },
   ai_insights: {
-    title: "AI Insights",
-    features: [
+    title: "AI Insights (PRO)",
+    bullets: [
       "Adjacency analysis",
-      "Heatmap patterns",
-      "Sequential drift",
+      "Heatmap-based number regions",
+      "Sequential drift patterns",
       "Per-ball positional AI",
+    ],
+  },
+  ai_quality: {
+    title: "AI Quality Analysis (PRO)",
+    bullets: [
+      "System quality comparison",
+      "Stability and diversity metrics",
+      "AI verdict summary",
+    ],
+  },
+  generic: {
+    title: "PRO Features",
+    bullets: [
+      "Advanced analytical tools",
+      "Deeper system evaluation",
+      "Extended optimization options",
     ],
   },
 };
 
-export default function ProModal({ open, reason, onClose }: ProModalProps) {
+/* =========================
+   COMPONENT
+========================= */
+
+export default function ProModal({
+  open,
+  reason = "generic",
+  onClose,
+}: ProModalProps) {
   if (!open) return null;
 
-  const cfg = (reason && REASONS[reason]) || {
-    title: "PRO Features",
-    features: [],
-  };
+  const content = PRO_CONTENT[reason] || PRO_CONTENT.generic;
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-card">
-        <h2>🔓 Unlock PRO</h2>
+    <div
+      className="modal-backdrop"
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        className="modal-card"
+        style={{
+          background: "#1F232B",
+          borderRadius: 12,
+          padding: 20,
+          maxWidth: 520,
+          width: "100%",
+          border: "1px solid #2B2F38",
+        }}
+      >
+        <h2 style={{ marginBottom: 12 }}>
+          🔓 {content.title}
+        </h2>
 
-        <p style={{ color: "#C8CCD4", marginBottom: 12 }}>
-          PRO features provide <b>deeper analytical insight</b>.<br />
-          They do <b>not</b> predict lottery outcomes and do not guarantee wins.
+        <p style={{ color: "#C8CCD4", fontSize: 14, marginBottom: 12 }}>
+          PRO features provide deeper analytical insight.
+          They do <b>not</b> predict lottery outcomes
+          and do <b>not</b> guarantee winnings.
         </p>
 
-        <CollapseSection title={cfg.title} defaultOpen>
-          <ul style={{ paddingLeft: 18 }}>
-            {cfg.features.map((f, i) => (
-              <li key={i} style={{ marginBottom: 6 }}>{f}</li>
+        <CollapseSection title="What you get with PRO" defaultOpen>
+          <ul style={{ paddingLeft: 18, marginTop: 8 }}>
+            {content.bullets.map((b, i) => (
+              <li key={i} style={{ marginBottom: 6 }}>
+                {b}
+              </li>
             ))}
           </ul>
         </CollapseSection>
 
-        <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+        <div
+          style={{
+            marginTop: 18,
+            display: "flex",
+            gap: 12,
+            justifyContent: "flex-end",
+          }}
+        >
           <button
-            className="btn btn-primary"
-            onClick={() => alert("PRO is coming soon")}
+            className="btn btn-secondary"
+            onClick={onClose}
           >
-            Unlock PRO
+            Maybe later
           </button>
 
-          <button className="btn btn-secondary" onClick={onClose}>
-            Maybe later
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              alert("PRO is coming soon");
+              onClose();
+            }}
+          >
+            Unlock PRO
           </button>
         </div>
       </div>
