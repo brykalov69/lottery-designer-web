@@ -1,10 +1,9 @@
 import { useHistoryStore } from "../stores/historyStore";
+import { useSessionStore } from "../stores/useSessionStore";
 
 export default function AISummary() {
   const { history } = useHistoryStore();
-
-  // позже заменится на auth / license
-  const isPro = false;
+  const { openProModal, isPro } = useSessionStore();
 
   const hasHistory = !!history.payload;
   const totalDraws = history.payload?.meta.totalDraws ?? 0;
@@ -28,7 +27,9 @@ export default function AISummary() {
           {hasHistory ? "✓" : "✕"}{" "}
           <b>History</b>{" "}
           {hasHistory
-            ? `loaded (${totalDraws} draws${ballCount ? `, ${ballCount} main balls` : ""})`
+            ? `loaded (${totalDraws} draws${
+                ballCount ? `, ${ballCount} main balls` : ""
+              })`
             : "not loaded"}
         </li>
 
@@ -82,7 +83,10 @@ export default function AISummary() {
             Unlock advanced AI analysis, patterns and predictions.
           </p>
 
-          <button className="btn btn-primary">
+          <button
+            className="btn btn-primary"
+            onClick={() => openProModal("ai_summary")}
+          >
             Upgrade to PRO
           </button>
         </div>

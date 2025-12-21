@@ -14,6 +14,7 @@ export type ProModalReason =
   | "budget_money"
   | "ai_insights"
   | "ai_quality"
+  | "ai_summary"
   | "generic";
 
 export type ProModalState = {

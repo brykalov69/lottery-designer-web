@@ -1,6 +1,10 @@
 import CollapseSection from "./CollapseSection";
 
-type ProReason =
+/* =========================
+   PRO REASONS (SAFE)
+========================= */
+
+export type ProReason =
   | "analytics_quads"
   | "analytics_quints"
   | "greedy_fast"
@@ -8,7 +12,12 @@ type ProReason =
   | "budget_money"
   | "ai_insights"
   | "ai_quality"
+  | "ai_summary"   // ✅ ДОБАВЛЕНО
   | "generic";
+
+/* =========================
+   PRO MODAL PROPS
+========================= */
 
 type ProModalProps = {
   open: boolean;
@@ -27,66 +36,81 @@ const PRO_CONTENT: Record<
   analytics_quads: {
     title: "Advanced Analytics (PRO)",
     bullets: [
-      "4-number combination frequency",
-      "Rare structural patterns",
-      "Deeper historical insight",
+      "4-number combination frequency analysis",
+      "Deeper structural insights",
+      "Rare pattern detection",
     ],
   },
+
   analytics_quints: {
     title: "Deep Pattern Analysis (PRO)",
     bullets: [
-      "5-number rare patterns",
-      "Strongest historical signals",
-      "High-value analytical insight",
+      "5-number pattern detection",
+      "Extremely rare combination insights",
+      "High-signal historical structures",
     ],
   },
+
   greedy_fast: {
-    title: "Greedy Optimizer — Advanced Modes (PRO)",
+    title: "Greedy Fast Mode (PRO)",
     bullets: [
-      "Fast optimization strategy",
-      "Hybrid heuristic optimization",
-      "Improved coverage efficiency",
+      "Much faster optimization",
+      "Best for large number pools",
+      "Speed-optimized heuristics",
     ],
   },
+
   greedy_hybrid: {
-    title: "Greedy Optimizer — Advanced Modes (PRO)",
+    title: "Greedy Hybrid Mode (PRO)",
     bullets: [
-      "Fast optimization strategy",
-      "Hybrid heuristic optimization",
-      "Improved coverage efficiency",
+      "Balance between speed and coverage",
+      "Advanced optimization strategy",
+      "Recommended for experienced users",
     ],
   },
+
   budget_money: {
-    title: "Smart Budget — Money Mode (PRO)",
+    title: "Money-Based Budget Optimization (PRO)",
     bullets: [
-      "Optimize systems by total budget",
-      "Account for ticket cost",
-      "Controlled spending strategies",
+      "Optimize systems by real budget",
+      "Control ticket cost and total spend",
+      "Smarter allocation of resources",
     ],
   },
+
   ai_insights: {
-    title: "AI Insights (PRO)",
+    title: "AI Insights Suite (PRO)",
     bullets: [
-      "Adjacency analysis",
-      "Heatmap-based number regions",
-      "Sequential drift patterns",
-      "Per-ball positional AI",
+      "Advanced AI-driven analysis modules",
+      "Patterns, clusters and drift detection",
+      "Statistical signal interpretation",
     ],
   },
+
   ai_quality: {
-    title: "AI Quality Analysis (PRO)",
+    title: "AI Quality Comparison (PRO)",
     bullets: [
-      "System quality comparison",
-      "Stability and diversity metrics",
-      "AI verdict summary",
+      "Compare Greedy vs Budget systems",
+      "Understand trade-offs",
+      "AI-assisted verdict and insights",
     ],
   },
-  generic: {
-    title: "PRO Features",
+
+  ai_summary: {
+    title: "AI Insights Overview (PRO)",
     bullets: [
-      "Advanced analytical tools",
-      "Deeper system evaluation",
-      "Extended optimization options",
+      "Unlock all AI analysis modules",
+      "Patterns, clusters and drift detection",
+      "Advanced structural insights",
+    ],
+  },
+
+  generic: {
+    title: "Upgrade to PRO",
+    bullets: [
+      "Unlock advanced analytical features",
+      "Access deeper insights",
+      "Designed for serious players",
     ],
   },
 };
