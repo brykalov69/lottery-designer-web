@@ -135,19 +135,6 @@ export default function HeatmapPreview({ isPro }: { isPro: boolean }) {
           );
         })}
       </div>
-
-      {!isPro && (
-        <div
-          style={{
-            marginTop: 14,
-            fontSize: 13,
-            color: "#C8CCD4",
-          }}
-        >
-          🔒 Unlock PRO to see <b>all hot & cold zones</b> and understand how
-          number ranges influence predictions.
-        </div>
-      )}
-    </>
+        </>
   );
 }

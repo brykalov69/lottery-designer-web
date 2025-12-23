@@ -156,13 +156,23 @@ export default function ProModal({
           🔓 {content.title}
         </h2>
 
-        <p style={{ color: "#C8CCD4", fontSize: 14, marginBottom: 12 }}>
+        <p
+          style={{
+            color: "#C8CCD4",
+            fontSize: 14,
+            marginBottom: 12,
+          }}
+        >
           PRO features provide deeper analytical insight.
           They do <b>not</b> predict lottery outcomes
           and do <b>not</b> guarantee winnings.
         </p>
 
-        <CollapseSection title="What you get with PRO" defaultOpen>
+        <CollapseSection
+          id="proModal.benefits"
+          title="What you get with PRO"
+          defaultOpen
+        >
           <ul style={{ paddingLeft: 18, marginTop: 8 }}>
             {content.bullets.map((b, i) => (
               <li key={i} style={{ marginBottom: 6 }}>

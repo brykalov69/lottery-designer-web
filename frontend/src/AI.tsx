@@ -1,4 +1,5 @@
 import CollapseSection from "./components/CollapseSection";
+import LockedTeaser from "./components/LockedTeaser";
 
 import AISummary from "./ai/AISummary";
 import GlobalFrequencyCards from "./ai/GlobalFrequencyCards";
@@ -24,7 +25,8 @@ export default function AI() {
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         AI Insights analyze historical data to highlight structural patterns
-        and statistical signals.<br />
+        and statistical signals.
+        <br />
         They do not predict future outcomes and do not guarantee winnings.
       </div>
 
@@ -32,14 +34,15 @@ export default function AI() {
       <AISummary />
 
       {/* 🔍 GLOBAL FREQUENCY — FREE */}
-      <CollapseSection title="Global Frequency (FREE)" defaultOpen>
+      <CollapseSection
+        id="ai.globalFrequency"
+        title="Global Frequency (FREE)"
+        defaultOpen
+      >
         <GlobalFrequencyCards />
       </CollapseSection>
 
-      {/* =========================
-          PRO INSIGHTS BLOCK
-      ========================= */}
-
+      {/* ========================= PRO INSIGHTS BLOCK ========================= */}
       {!isPro && (
         <div
           className="collapse-card"
@@ -60,44 +63,82 @@ export default function AI() {
       )}
 
       {/* PER-BALL POSITIONAL */}
-      <CollapseSection title="Per-Ball Positional AI">
+      <CollapseSection
+        id="ai.perBallPositional"
+        title="Per-Ball Positional AI"
+      >
         <PerBallPositionalPanel isPro={isPro} />
       </CollapseSection>
 
       {/* AI RECOMMENDED PATTERNS */}
-      <CollapseSection title="AI Recommended Patterns">
+      <CollapseSection
+        id="ai.recommendedPatterns"
+        title="AI Recommended Patterns"
+      >
         <AIRecommendedPatternsPanel isPro={isPro} />
       </CollapseSection>
 
-      {/* ADJACENCY */}
-      <CollapseSection title="Adjacency & Follow-Up Analysis" defaultOpen>
-        <AdjacencyPreview isPro={isPro} />
-      </CollapseSection>
+      {/* ========================= ADJACENCY TEASER (NO COLLAPSE) ========================= */}
+      <div className="collapse-card">
+        <div className="collapse-header">
+          Adjacency & Follow-Up Analysis
+        </div>
+        <div className="collapse-content">
+          <LockedTeaser
+            locked={!isPro}
+            cta="Unlock PRO to explore full follow-up patterns and transition matrices."
+          >
+            <AdjacencyPreview isPro={isPro} />
+          </LockedTeaser>
+        </div>
+      </div>
 
       {/* SEQUENTIAL DRIFT */}
-      <CollapseSection title="Sequential Drift Patterns">
+      <CollapseSection
+        id="ai.sequentialDrift"
+        title="Sequential Drift Patterns"
+      >
         <SequentialDriftPanel isPro={isPro} />
       </CollapseSection>
 
       {/* NEXT DRAW */}
-      <CollapseSection title="Next Draw Predictor">
+      <CollapseSection
+        id="ai.nextDraw"
+        title="Next Draw Predictor"
+      >
         <NextDrawPredictorPanel isPro={isPro} />
       </CollapseSection>
 
       {/* AI TICKET GENERATOR */}
-      <CollapseSection title="AI Ticket Generator">
+      <CollapseSection
+        id="ai.ticketGenerator"
+        title="AI Ticket Generator"
+      >
         <AITicketGeneratorPanel isPro={isPro} />
       </CollapseSection>
 
       {/* AI SMART TIPS */}
-      <CollapseSection title="AI Smart Tips">
+      <CollapseSection
+        id="ai.smartTips"
+        title="AI Smart Tips"
+      >
         <AISmartTipsPanel isPro={isPro} />
       </CollapseSection>
 
-      {/* HEATMAP */}
-      <CollapseSection title="Heatmap & Hot/Cold Zones" defaultOpen>
-        <HeatmapPreview isPro={isPro} />
-      </CollapseSection>
+      {/* ========================= HEATMAP TEASER (NO COLLAPSE) ========================= */}
+      <div className="collapse-card">
+        <div className="collapse-header">
+          Heatmap & Hot/Cold Zones
+        </div>
+        <div className="collapse-content">
+          <LockedTeaser
+            locked={!isPro}
+            cta="Unlock PRO to see all hot & cold zones and understand number ranges."
+          >
+            <HeatmapPreview isPro={isPro} />
+          </LockedTeaser>
+        </div>
+      </div>
 
       {!history.payload && (
         <p style={{ color: "#C8CCD4", marginTop: 12 }}>
@@ -106,10 +147,10 @@ export default function AI() {
       )}
 
       <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 16 }}>
-        AI insights provide analytical observations
-        based on historical data.<br />
-        They are not recommendations
-        and should not be interpreted as predictions.
+        AI insights provide analytical observations based on historical data.
+        <br />
+        They are not recommendations and should not be interpreted as
+        predictions.
       </div>
     </>
   );

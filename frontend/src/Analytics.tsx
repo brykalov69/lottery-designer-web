@@ -125,7 +125,8 @@ export default function Analytics() {
 
   const renderEmptyWarning = () => (
     <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 8 }}>
-      No repeated combinations found.<br />
+      No repeated combinations found.
+      <br />
       This is normal for smaller or highly diverse datasets.
     </div>
   );
@@ -169,46 +170,65 @@ export default function Analytics() {
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         Analytics identify number combinations that appeared together
-        multiple times in historical draws.<br />
+        multiple times in historical draws.
+        <br />
         Only main balls are analyzed. Bonus or extra balls are ignored.
       </div>
 
-      <CollapseSection title="View" defaultOpen>
-        <button
-          className={`btn ${
-            tab === "triplets" ? "btn-active" : "btn-secondary"
-          }`}
-          onClick={() => setTab("triplets")}
+      <CollapseSection
+        id="analytics.view"
+        title="View"
+        defaultOpen
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
         >
-          Triplets
-          <HelpTip text="Triplets are combinations of 3 numbers that appeared together more than once." />
-        </button>
+          <button
+            className={`btn ${
+              tab === "triplets" ? "btn-active" : "btn-secondary"
+            }`}
+            onClick={() => setTab("triplets")}
+          >
+            Triplets
+            <HelpTip text="Triplets are combinations of 3 numbers that appeared together more than once." />
+          </button>
 
-        <button
-          className={`btn ${
-            tab === "quads" ? "btn-active" : "btn-secondary"
-          }`}
-          onClick={() => setTab("quads")}
-        >
-          Quads
-          <HelpTip text="Quads are rare 4-number combinations and are available in PRO." />
-        </button>
+          <button
+            className={`btn ${
+              tab === "quads" ? "btn-active" : "btn-secondary"
+            }`}
+            onClick={() => setTab("quads")}
+          >
+            Quads
+            <HelpTip text="Quads are rare 4-number combinations and are available in PRO." />
+          </button>
 
-        <button
-          className={`btn ${
-            tab === "quints" ? "btn-active" : "btn-secondary"
-          }`}
-          onClick={() => setTab("quints")}
-        >
-          Quints
-          <HelpTip text="Quints are very rare 5-number patterns available in PRO." />
-        </button>
+          <button
+            className={`btn ${
+              tab === "quints" ? "btn-active" : "btn-secondary"
+            }`}
+            onClick={() => setTab("quints")}
+          >
+            Quints
+            <HelpTip text="Quints are very rare 5-number patterns available in PRO." />
+          </button>
+        </div>
       </CollapseSection>
 
-      <CollapseSection title="Options" defaultOpen>
+      <CollapseSection
+        id="analytics.options"
+        title="Options"
+        defaultOpen
+      >
         <label>Limit</label>
         <input
           type="number"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={limit}
           min={0}
           onChange={(e) => setLimit(Number(e.target.value))}
@@ -228,7 +248,11 @@ export default function Analytics() {
         </select>
       </CollapseSection>
 
-      <CollapseSection title="Results" defaultOpen>
+      <CollapseSection
+        id="analytics.results"
+        title="Results"
+        defaultOpen
+      >
         <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
           Limited historical data or active filters may reduce available results.
         </div>

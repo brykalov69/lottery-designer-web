@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
+import HelpTip from "./components/HelpTip";
 
 import { generateSystem } from "./api/api";
 import { parseNumberList } from "./utils/numberParser";
 import { useSessionStore } from "./stores/useSessionStore";
-import HelpTip from "./components/HelpTip";
 
 export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
@@ -16,12 +16,16 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
 
   const input = session.generator.input;
   const result = session.generator.result;
+  const status = session.generator.status;
+  const error = session.generator.error;
 
   const setInput = session.setGeneratorInput;
   const setResult = session.setGeneratorResult;
+  const setStatus = session.setGeneratorStatus;
+  const setError = session.setGeneratorError;
 
   // -----------------------------
-  // UI WARNINGS (B)
+  // UI WARNINGS (approved logic)
   // -----------------------------
   const [showGroupWarning, setShowGroupWarning] = useState(false);
 
@@ -42,120 +46,125 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
   const handleGenerate = async () => {
     setResult(null);
+    setError(null);
     setShowGroupWarning(false);
 
-    // ---- BASE NUMBERS (SAFE DEFAULT) ----
-    let baseNumbers: number[];
+    try {
+      setStatus("running");
 
-    if (input.numbersInput.trim()) {
-      const baseRes = parseNumberList(input.numbersInput, {
-        minRequired: 5,
-        maxValue: 99,
-      });
+      // ---- BASE NUMBERS ----
+      let baseNumbers: number[];
 
-      if (!baseRes.ok) return;
-      baseNumbers = baseRes.numbers;
-    } else {
-      // Default base numbers
-      baseNumbers = [1, 2, 3, 4, 5, 6];
-    }
+      if (input.numbersInput.trim()) {
+        const baseRes = parseNumberList(input.numbersInput, {
+          minRequired: 5,
+          maxValue: 99,
+        });
+        if (!baseRes.ok) {
+          setStatus("idle");
+          return;
+        }
+        baseNumbers = baseRes.numbers;
+      } else {
+        baseNumbers = [1, 2, 3, 4, 5, 6];
+      }
 
-    // ---- FIXED POSITIONS ----
-    let fixedPositions: any = null;
-    if (input.fixedFirstInput.trim()) {
-      const fixedRes = parseNumberList(input.fixedFirstInput, {
-        minRequired: 1,
-        maxValue: 99,
-      });
+      // ---- FIXED POSITIONS ----
+      let fixedPositions: any = null;
+      if (input.fixedFirstInput.trim()) {
+        const fixedRes = parseNumberList(input.fixedFirstInput, {
+          minRequired: 1,
+          maxValue: 99,
+        });
+        if (!fixedRes.ok) {
+          setStatus("idle");
+          return;
+        }
+        fixedPositions = { 0: fixedRes.numbers };
+      }
 
-      if (!fixedRes.ok) return;
-      fixedPositions = { 0: fixedRes.numbers };
-    }
+      // ---- FORCED NUMBERS ----
+      let forcedNumbers: number[] | null = null;
+      if (input.forcedInput.trim()) {
+        const forcedRes = parseNumberList(input.forcedInput, {
+          minRequired: 1,
+          maxValue: 99,
+        });
+        if (!forcedRes.ok) {
+          setStatus("idle");
+          return;
+        }
+        forcedNumbers = forcedRes.numbers;
+      }
 
-    // ---- FORCED NUMBERS ----
-    let forcedNumbers: number[] | null = null;
-    if (input.forcedInput.trim()) {
-      const forcedRes = parseNumberList(input.forcedInput, {
-        minRequired: 1,
-        maxValue: 99,
-      });
+      // ---- GROUPS ----
+      let groups: any = null;
+      if (input.groupAInput || input.groupBInput || input.groupCInput) {
+        const parseGroup = (value: string) => {
+          if (!value.trim()) return [];
+          const r = parseNumberList(value, { minRequired: 1, maxValue: 99 });
+          if (!r.ok) throw new Error();
+          return r.numbers;
+        };
 
-      if (!forcedRes.ok) return;
-      forcedNumbers = forcedRes.numbers;
-    }
+        try {
+          groups = {
+            A: parseGroup(input.groupAInput),
+            B: parseGroup(input.groupBInput),
+            C: parseGroup(input.groupCInput),
+          };
+        } catch {
+          setStatus("idle");
+          return;
+        }
+      }
 
-    // ---- GROUPS ----
-    let groups: any = null;
-    if (input.groupAInput || input.groupBInput || input.groupCInput) {
-      const parseGroup = (label: string, value: string) => {
-        if (!value.trim()) return [];
-        const r = parseNumberList(value, { minRequired: 1, maxValue: 99 });
-        if (!r.ok) throw new Error(`${label} group: ${r.error}`);
-        return r.numbers;
+      // ---- B2: GROUPS OUTSIDE BASE WARNING ----
+      if (groups) {
+        const baseSet = new Set(baseNumbers);
+        const allGroupNumbers = [
+          ...(groups.A || []),
+          ...(groups.B || []),
+          ...(groups.C || []),
+        ];
+        if (allGroupNumbers.some((n) => !baseSet.has(n))) {
+          setShowGroupWarning(true);
+        }
+      }
+
+      // ---- PAYLOAD (CANONICAL) ----
+      const payload = {
+        numbers: baseNumbers,
+        limit:
+          input.limit && parseInt(input.limit) > 0
+            ? parseInt(input.limit)
+            : null,
+        fixed_positions: fixedPositions,
+        forced_numbers: forcedNumbers,
+        groups: groups && Object.keys(groups).length > 0 ? groups : null,
+        group_limits:
+          input.quotaA || input.quotaB || input.quotaC
+            ? {
+                A: input.quotaA ? parseInt(input.quotaA) : undefined,
+                B: input.quotaB ? parseInt(input.quotaB) : undefined,
+                C: input.quotaC ? parseInt(input.quotaC) : undefined,
+              }
+            : null,
+        range_mode: input.rangeMode || "global",
+        per_ball_ranges:
+          input.perBallRanges &&
+          Object.keys(input.perBallRanges).length > 0
+            ? input.perBallRanges
+            : null,
       };
 
-      try {
-        groups = {
-          A: parseGroup("A", input.groupAInput),
-          B: parseGroup("B", input.groupBInput),
-          C: parseGroup("C", input.groupCInput),
-        };
-      } catch {
-        return;
-      }
+      const out = await generateSystem(payload);
+      setResult(out);
+      setStatus("done");
+    } catch (e: any) {
+      setError(e?.message ?? "Generation failed");
+      setStatus("error");
     }
-
-    // ---- B2: GROUPS OUTSIDE BASE WARNING ----
-    if (groups) {
-      const baseSet = new Set(baseNumbers);
-      const allGroupNumbers = [
-        ...(groups.A || []),
-        ...(groups.B || []),
-        ...(groups.C || []),
-      ];
-
-      const hasOutside = allGroupNumbers.some((n) => !baseSet.has(n));
-      if (hasOutside) {
-        setShowGroupWarning(true);
-      }
-    }
-
-    // ---- PAYLOAD (CANONICAL) ----
-    const payload = {
-      numbers: baseNumbers,
-
-      limit:
-        input.limit && parseInt(input.limit) > 0
-          ? parseInt(input.limit)
-          : null,
-
-      fixed_positions: fixedPositions,
-      forced_numbers: forcedNumbers,
-
-      groups:
-        groups && Object.keys(groups).length > 0
-          ? groups
-          : null,
-
-      group_limits:
-        input.quotaA || input.quotaB || input.quotaC
-          ? {
-              A: input.quotaA ? parseInt(input.quotaA) : undefined,
-              B: input.quotaB ? parseInt(input.quotaB) : undefined,
-              C: input.quotaC ? parseInt(input.quotaC) : undefined,
-            }
-          : null,
-
-      range_mode: input.rangeMode || "global",
-
-      per_ball_ranges:
-        input.perBallRanges && Object.keys(input.perBallRanges).length > 0
-          ? input.perBallRanges
-          : null,
-    };
-
-    const out = await generateSystem(payload);
-    setResult(out);
   };
 
   // -----------------------------
@@ -178,14 +187,18 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         Allowed range: <strong>1–99</strong>.<br /><br />
         If no numbers are entered, a default example system is generated
         to demonstrate how the tool works.
+        Currently, the Generator is configured
+for 5-ball lottery formats.
+
+Support for 6-ball and 7-ball systems
+will be added in a future update.
       </div>
 
       <DataInputPanel
         title={
           <>
             Base Numbers
-            <HelpTip text="Base Numbers define the main pool used to generate combinations.
-Add more numbers to increase variety, or fewer to generate tighter systems." />
+            <HelpTip text="Base Numbers define the main pool used to generate combinations. Add more numbers to increase variety, or fewer to generate tighter systems." />
           </>
         }
         subtitle="Enter numbers manually"
@@ -220,7 +233,7 @@ Add more numbers to increase variety, or fewer to generate tighter systems." />
         hint="Optional."
       />
 
-      {/* GROUPS */}
+      {/* GROUPS — rollback layout, mobile-safe */}
       <div className="collapse-card">
         <div className="collapse-content">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>
@@ -238,7 +251,7 @@ Add more numbers to increase variety, or fewer to generate tighter systems." />
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
               gap: 10,
             }}
           >
@@ -267,33 +280,78 @@ Add more numbers to increase variety, or fewer to generate tighter systems." />
         </div>
       </div>
 
-      <CollapseSection title="Group Quotas & Limits" defaultOpen>
+     <CollapseSection
+  id="generator.groupLimits"
+  title={
+    <>
+      Group Quotas & Limits
+      <HelpTip
+        text={
+          "The total number of selected group quotas\n" +
+          "(A + B + C) must equal the number of balls\n" +
+          "in the lottery system being generated.\n\n" +
+          "For example:\n" +
+          "• 5-ball lottery → A + B + C = 5\n" +
+          "• 6-ball lottery → A + B + C = 6\n\n" +
+          "Group limits restrict how many numbers\n" +
+          "from each group may appear in a combination.\n\n" +
+          "Example:\n" +
+          "A max = 2 → no more than 2 numbers from Group A\n" +
+          "will appear in any generated combination."
+        }
+      />
+    </>
+  }
+  defaultOpen
+>
+
+
         <input
           placeholder="A max"
           value={input.quotaA}
           onChange={(e) => setInput({ quotaA: e.target.value })}
+          style={{ width: "100%" }}
         />
         <input
           placeholder="B max"
           value={input.quotaB}
           onChange={(e) => setInput({ quotaB: e.target.value })}
+          style={{ width: "100%" }}
         />
         <input
           placeholder="C max"
           value={input.quotaC}
           onChange={(e) => setInput({ quotaC: e.target.value })}
+          style={{ width: "100%" }}
         />
         <input
           placeholder="Max combinations"
           value={input.limit}
           onChange={(e) => setInput({ limit: e.target.value })}
+          style={{ width: "100%" }}
         />
       </CollapseSection>
 
-      <CollapseSection title="Generate & Result" defaultOpen>
-        <button onClick={handleGenerate} className="btn btn-primary">
-          Generate System
+      <CollapseSection
+  id="generator.generateResult"
+  title="Generate & Result"
+  defaultOpen
+>
+
+        <button
+          onClick={handleGenerate}
+          className="btn btn-primary"
+          disabled={status === "running"}
+          style={{ width: "100%", maxWidth: 320 }}
+        >
+          {status === "running" ? "Generating…" : "Generate System"}
         </button>
+
+        {error && (
+          <div style={{ color: "#ff6b6b", marginTop: 8 }}>
+            {error}
+          </div>
+        )}
 
         {result && (
           <>
@@ -312,13 +370,13 @@ Add more numbers to increase variety, or fewer to generate tighter systems." />
               }
             />
 
-            {/* B1 — Sequential exclusion info */}
+            {/* B1 */}
             <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
               Some highly sequential combinations were excluded
               to improve diversity.
             </div>
 
-            {/* B2 — Groups outside base */}
+            {/* B2 */}
             {showGroupWarning && (
               <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 4 }}>
                 Some group numbers are not present in Base Numbers

@@ -1,48 +1,66 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { useSessionStore } from "../stores/useSessionStore";
 
 interface CollapseSectionProps {
-  title: React.ReactNode;
+  /** Глобальный стабильный ключ: module.section */
+  id: string;
+
+  title: ReactNode;
   children: ReactNode;
 
-  // новое
+  /** Используется ТОЛЬКО если ui.collapse[id] ещё не задан */
   defaultOpen?: boolean;
+
+  /** UI / PRO */
   pro?: boolean;
   subtitle?: string;
 
-  // совместимость со старым AI.tsx
-  description?: string;      // alias для subtitle
-  proOnly?: boolean;         // если секция только для PRO
-  isPro?: boolean;           // текущий статус пользователя
-  preview?: ReactNode;       // мини-превью в заголовке
+  /** Совместимость со старым кодом */
+  description?: string; // alias для subtitle
+  proOnly?: boolean;    // если секция только для PRO
+  isPro?: boolean;      // текущий статус пользователя
+  preview?: ReactNode;  // мини-превью в заголовке
 }
 
 export default function CollapseSection({
+  id,
   title,
   children,
 
   defaultOpen = false,
 
-  // новое
   pro = false,
   subtitle,
 
-  // совместимость
   description,
   proOnly = false,
   isPro = true,
   preview,
 }: CollapseSectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const { ui, setUICollapse } = useSessionStore();
+
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState("0px");
 
-  // если секция PRO-only и юзер не PRO
+  // 🔐 PRO-lock
   const locked = proOnly && !isPro;
 
   // subtitle fallback
   const subtitleText = subtitle ?? description;
 
+  // 🔑 ЕДИНЫЙ ИСТОЧНИК OPEN
+  const open =
+    ui.collapse[id] !== undefined
+      ? ui.collapse[id]
+      : defaultOpen;
+
+  // toggle → store
+  const toggle = () => {
+    setUICollapse(id, !open);
+  };
+
+  // анимация высоты
   useEffect(() => {
     if (contentRef.current) {
       setHeight(open ? `${contentRef.current.scrollHeight}px` : "0px");
@@ -55,10 +73,8 @@ export default function CollapseSection({
       <div
         className="collapse-header"
         onClick={(e) => {
-          // ✅ КРИТИЧЕСКИЙ FIX:
-          // предотвращаем перехват кликов у контента
           e.stopPropagation();
-          setOpen((v) => !v);
+          toggle();
         }}
       >
         <div className="header-left">
@@ -69,9 +85,13 @@ export default function CollapseSection({
         </div>
 
         <div className="header-right">
-          {preview && <span className="collapse-preview">{preview}</span>}
+          {preview && (
+            <span className="collapse-preview">{preview}</span>
+          )}
 
-          {(pro || proOnly) && <span className="pro-badge">PRO</span>}
+          {(pro || proOnly) && (
+            <span className="pro-badge">PRO</span>
+          )}
 
           {open ? (
             <FiChevronUp className="collapse-icon" />

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import CollapseSection from "./components/CollapseSection";
 import { useSessionStore } from "./stores/useSessionStore";
 
@@ -14,9 +13,9 @@ type Metrics = {
   driftPenalty: number;
 };
 
-// -------------------------------------
-// SIMPLE FRONTEND METRICS (STRUCTURAL)
-// -------------------------------------
+/* -------------------------------------
+   SIMPLE FRONTEND METRICS (STRUCTURAL)
+------------------------------------- */
 
 function computeMetrics(system: number[][]): Metrics {
   if (!system.length) {
@@ -74,14 +73,21 @@ function computeMetrics(system: number[][]): Metrics {
 }
 
 export default function AIQuality() {
-  const { isPro, openProModal, greedy, budget } = useSessionStore();
+  const {
+    isPro,
+    openProModal,
+    greedy,
+    budget,
+    aiQuality,
+    setAIQuality,
+    setUICollapse,
+  } = useSessionStore();
 
-  const greedyResult = greedy?.result?.system ?? null;
-  const budgetResult = budget?.result?.system ?? null;
+  const greedySystem =
+    aiQuality.useGreedy ? greedy.result?.system ?? null : null;
 
-  const [greedySystem, setGreedySystem] = useState<number[][] | null>(null);
-  const [budgetSystem, setBudgetSystem] = useState<number[][] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const budgetSystem =
+    aiQuality.useBudget ? budget.result?.system ?? null : null;
 
   const greedyMetrics = greedySystem
     ? computeMetrics(greedySystem)
@@ -96,23 +102,38 @@ export default function AIQuality() {
       <h1>AI Quality</h1>
 
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
-        AI Quality evaluates the structural properties of generated systems.<br />
+        AI Quality evaluates the structural properties of generated systems.
+        <br />
         It does not measure winning probability
-        and does not provide recommendations.
+        and does not provide predictions.
       </div>
 
       {/* LOAD SYSTEMS */}
-      <CollapseSection title="Load Systems" defaultOpen>
+      <CollapseSection
+        id="aiQuality.load"
+        title="Load Systems"
+        defaultOpen
+      >
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <button
             className="btn btn-secondary"
             onClick={() => {
-              if (!greedyResult) {
-                setError("No Greedy system found. Generate a system first.");
+              if (!greedy.result?.system) {
+                setAIQuality({
+                  error: "No Greedy system found. Generate a system first.",
+                });
                 return;
               }
-              setGreedySystem(greedyResult);
-              setError(null);
+
+              setAIQuality({ useGreedy: true, error: null });
+
+              // 🔓 auto-open Greedy analysis
+              setUICollapse("aiQuality.single.greedy", true);
+
+              // 🔓 auto-open comparison if possible
+              if (aiQuality.useBudget && isPro) {
+                setUICollapse("aiQuality.compare", true);
+              }
             }}
           >
             Load Greedy System
@@ -121,38 +142,61 @@ export default function AIQuality() {
           <button
             className="btn btn-secondary"
             onClick={() => {
-              if (!budgetResult) {
-                setError("No Budget system found. Generate a system first.");
+              if (!budget.result?.system) {
+                setAIQuality({
+                  error: "No Budget system found. Generate a system first.",
+                });
                 return;
               }
-              setBudgetSystem(budgetResult);
-              setError(null);
+
+              setAIQuality({ useBudget: true, error: null });
+
+              // 🔓 auto-open Budget analysis
+              setUICollapse("aiQuality.single.budget", true);
+
+              // 🔓 auto-open comparison if possible
+              if (aiQuality.useGreedy && isPro) {
+                setUICollapse("aiQuality.compare", true);
+              }
             }}
           >
             Load Budget System
           </button>
         </div>
 
-        {error && (
-          <p style={{ color: "#e74c3c", marginTop: 8 }}>{error}</p>
+        {aiQuality.error && (
+          <p style={{ color: "#e74c3c", marginTop: 8 }}>
+            {aiQuality.error}
+          </p>
         )}
       </CollapseSection>
 
-      {/* FREE — SINGLE SYSTEM ANALYSIS */}
-      {greedySystem && (
-        <CollapseSection title="Single System Analysis (FREE)" defaultOpen>
-          <SingleSystemQuality label="Greedy" metrics={greedyMetrics!} />
+      {/* FREE — SINGLE SYSTEM ANALYSIS (GREEDY) */}
+      {greedySystem && greedyMetrics && (
+        <CollapseSection
+          id="aiQuality.single.greedy"
+          title="Single System Analysis (FREE)"
+          defaultOpen
+        >
+          <SingleSystemQuality label="Greedy" metrics={greedyMetrics} />
         </CollapseSection>
       )}
 
-      {budgetSystem && (
-        <CollapseSection title="Single System Analysis (FREE)">
-          <SingleSystemQuality label="Budget" metrics={budgetMetrics!} />
+      {/* FREE — SINGLE SYSTEM ANALYSIS (BUDGET) */}
+      {budgetSystem && budgetMetrics && (
+        <CollapseSection
+          id="aiQuality.single.budget"
+          title="Single System Analysis (FREE)"
+        >
+          <SingleSystemQuality label="Budget" metrics={budgetMetrics} />
         </CollapseSection>
       )}
 
       {/* PRO — COMPARISON */}
-      <CollapseSection title="Compare Greedy vs Budget (PRO)">
+      <CollapseSection
+        id="aiQuality.compare"
+        title="Compare Greedy vs Budget (PRO)"
+      >
         {isPro ? (
           greedySystem && budgetSystem ? (
             <>
@@ -173,8 +217,8 @@ export default function AIQuality() {
         ) : (
           <div style={{ textAlign: "center", padding: 12 }}>
             <p style={{ color: "#C8CCD4", marginBottom: 10 }}>
-              Unlock PRO to compare Greedy vs Budget systems,
-              evaluate trade-offs and receive an AI verdict.
+              Unlock PRO to compare Greedy vs Budget systems
+              and receive an AI verdict.
             </p>
             <button
               className="btn btn-secondary"

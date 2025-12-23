@@ -123,19 +123,6 @@ export default function AdjacencyPreview({ isPro }: { isPro: boolean }) {
           </div>
         ))}
       </div>
-
-      {!isPro && (
-        <div
-          style={{
-            marginTop: 14,
-            fontSize: 13,
-            color: "#C8CCD4",
-          }}
-        >
-          🔒 Unlock PRO to explore full follow-up patterns and transition
-          matrices.
-        </div>
-      )}
     </>
   );
 }

@@ -58,6 +58,8 @@ export type GeneratorResult = {
 export type GeneratorSlice = {
   input: GeneratorInput;
   result: GeneratorResult | null;
+  status: "idle" | "running" | "done" | "error";
+  error: string | null;
 };
 
 /* ---------- GREEDY ---------- */
@@ -103,12 +105,26 @@ export type BudgetSlice = {
   error: string | null;
 };
 
-/* ---------- AI ---------- */
+/* ---------- AI PIPE ---------- */
 
 export type AISlice = {
   source?: "greedy" | "budget" | null;
   system?: number[][] | null;
   status?: "idle" | "ready";
+};
+
+/* ---------- AI QUALITY ---------- */
+
+export type AIQualitySlice = {
+  useGreedy: boolean;
+  useBudget: boolean;
+  error: string | null;
+};
+
+/* ---------- UI (GLOBAL) ---------- */
+
+export type UISlice = {
+  collapse: Record<string, boolean>;
 };
 
 /* ---------- ROOT STATE ---------- */
@@ -122,7 +138,11 @@ export type SessionState = {
   generator: GeneratorSlice;
   greedy: GreedySlice;
   budget: BudgetSlice;
+
   ai: AISlice;
+  aiQuality: AIQualitySlice;
+
+  ui: UISlice;
 };
 
 /* =========================
@@ -142,27 +162,30 @@ const initialState: SessionState = {
     loaded: false,
   },
 
-  generator: {
-    input: {
-      numbersInput: "1 2 3 4 5 6",
-      limit: "",
+ generator: {
+  input: {
+    numbersInput: "1 2 3 4 5 6",
+    limit: "",
 
-      fixedFirstInput: "",
-      forcedInput: "",
+    fixedFirstInput: "",
+    forcedInput: "",
 
-      groupAInput: "",
-      groupBInput: "",
-      groupCInput: "",
+    groupAInput: "",
+    groupBInput: "",
+    groupCInput: "",
 
-      quotaA: "",
-      quotaB: "",
-      quotaC: "",
+    quotaA: "",
+    quotaB: "",
+    quotaC: "",
 
-      rangeMode: "global",
-      perBallRanges: {},
-    },
-    result: null,
+    rangeMode: "global",
+    perBallRanges: {},
   },
+  result: null,
+  status: "idle",
+  error: null,
+},
+
 
   greedy: {
     input: {
@@ -193,6 +216,16 @@ const initialState: SessionState = {
     source: null,
     system: null,
     status: "idle",
+  },
+
+  aiQuality: {
+    useGreedy: false,
+    useBudget: false,
+    error: null,
+  },
+
+  ui: {
+    collapse: {},
   },
 };
 
@@ -226,10 +259,7 @@ export function useSessionStore() {
   /* ---------- HISTORY ---------- */
 
   const setHistory = (rows: any[]) => {
-    state = {
-      ...state,
-      history: { rows, loaded: true },
-    };
+    state = { ...state, history: { rows, loaded: true } };
     emitChange();
   };
 
@@ -251,14 +281,21 @@ export function useSessionStore() {
       ...state,
       generator: { ...state.generator, result },
     };
-    emitChange();
-  };
 
-  const clearGenerator = () => {
-    state = {
-      ...state,
-      generator: initialState.generator,
-    };
+    // 🔓 auto-open generator results
+    if (result) {
+      state = {
+        ...state,
+        ui: {
+          ...state.ui,
+          collapse: {
+            ...state.ui.collapse,
+            "generator.results": true,
+          },
+        },
+      };
+    }
+
     emitChange();
   };
 
@@ -279,15 +316,19 @@ export function useSessionStore() {
     state = {
       ...state,
       greedy: { ...state.greedy, result, status: "done", error: null },
+      ui: {
+        ...state.ui,
+        collapse: {
+          ...state.ui.collapse,
+          "greedy.results": true, // 🔓 auto-open
+        },
+      },
     };
     emitChange();
   };
 
   const setGreedyStatus = (status: GreedySlice["status"]) => {
-    state = {
-      ...state,
-      greedy: { ...state.greedy, status },
-    };
+    state = { ...state, greedy: { ...state.greedy, status } };
     emitChange();
   };
 
@@ -316,6 +357,13 @@ export function useSessionStore() {
     state = {
       ...state,
       budget: { ...state.budget, result, status: "done", error: null },
+      ui: {
+        ...state.ui,
+        collapse: {
+          ...state.ui.collapse,
+          "budget.results": true, // 🔓 auto-open
+        },
+      },
     };
     emitChange();
   };
@@ -328,16 +376,13 @@ export function useSessionStore() {
     emitChange();
   };
 
-  /* ---------- AI ---------- */
+  /* ---------- AI PIPE ---------- */
 
   const setAIInput = (payload: {
     source: "greedy" | "budget";
     system: number[][];
   }) => {
-    state = {
-      ...state,
-      ai: { ...payload, status: "ready" },
-    };
+    state = { ...state, ai: { ...payload, status: "ready" } };
     emitChange();
   };
 
@@ -349,13 +394,36 @@ export function useSessionStore() {
     emitChange();
   };
 
+  /* ---------- AI QUALITY ---------- */
+
+  const setAIQuality = (partial: Partial<AIQualitySlice>) => {
+    state = {
+      ...state,
+      aiQuality: { ...state.aiQuality, ...partial },
+    };
+    emitChange();
+  };
+
+  /* ---------- UI ---------- */
+
+  const setUICollapse = (key: string, open: boolean) => {
+    state = {
+      ...state,
+      ui: {
+        ...state.ui,
+        collapse: {
+          ...state.ui.collapse,
+          [key]: open,
+        },
+      },
+    };
+    emitChange();
+  };
+
   /* ---------- PRO MODAL ---------- */
 
   const openProModal = (reason: ProModalReason = "generic") => {
-    state = {
-      ...state,
-      proModal: { open: true, reason },
-    };
+    state = { ...state, proModal: { open: true, reason } };
     emitChange();
   };
 
@@ -379,10 +447,13 @@ export function useSessionStore() {
 
     setHistory,
 
-    // Generator
-    setGeneratorInput,
-    setGeneratorResult,
-    clearGenerator,
+ 
+	// Generator
+	setGeneratorInput,
+	setGeneratorResult,
+	setGeneratorStatus,
+	setGeneratorError,
+
 
     // Greedy
     setGreedyInput,
@@ -399,6 +470,12 @@ export function useSessionStore() {
     setAIInput,
     clearAI,
 
+    // AI Quality
+    setAIQuality,
+
+    // UI
+    setUICollapse,
+
     // PRO modal
     openProModal,
     closeProModal,
@@ -406,3 +483,31 @@ export function useSessionStore() {
     setIsPro,
   };
 }
+
+/* ---------- GENERATOR STATUS ---------- */
+
+const setGeneratorStatus = (
+  status: GeneratorSlice["status"]
+) => {
+  state = {
+    ...state,
+    generator: {
+      ...state.generator,
+      status,
+    },
+  };
+  emitChange();
+};
+
+const setGeneratorError = (error: string | null) => {
+  state = {
+    ...state,
+    generator: {
+      ...state.generator,
+      error,
+      status: "error",
+    },
+  };
+  emitChange();
+};
+

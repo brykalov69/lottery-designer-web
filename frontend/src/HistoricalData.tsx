@@ -24,6 +24,9 @@ export default function HistoricalData() {
     setHistoryLoading,
     setHistoryError,
   } = useHistoryStore();
+  const isLoading = history.status === "loading";
+
+
 
   // -----------------------------
   // UI STATE
@@ -44,7 +47,7 @@ export default function HistoricalData() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // B warnings
+  // warnings
   const [showSmallHistoryWarning, setShowSmallHistoryWarning] =
     useState(false);
 
@@ -52,41 +55,45 @@ export default function HistoricalData() {
   // RESTORE FROM STORE
   // -----------------------------
   useEffect(() => {
-    if (history.payload) {
-      setMainBalls(history.payload.ballCount);
+    if (!history.payload) return;
 
-      const preview = history.payload.draws
-        .slice(0, 10)
-        .map((row) => {
-          const date = row.date ?? "—";
-          const main = row.main.join(" ");
-          const extra =
-            row.extra && row.extra.length > 0
-              ? `  |  extra: ${row.extra.join(" ")}`
-              : "";
-          return `${date}  |  ${main}${extra}`;
-        })
-        .join("\n");
+    setMainBalls(history.payload.ballCount);
 
-      setPreviewText(preview);
+    const preview = history.payload.draws
+      .slice(0, 10)
+      .map((row) => {
+        const date = row.date ?? "—";
+        const main = row.main.join(" ");
+        const extra =
+          row.extra && row.extra.length > 0
+            ? `  |  extra: ${row.extra.join(" ")}`
+            : "";
+        return `${date}  |  ${main}${extra}`;
+      })
+      .join("\n");
 
-      setSummary({
-        rows: history.payload.meta.totalDraws,
-        format: history.payload.meta.source,
-        from: history.payload.meta.from,
-        to: history.payload.meta.to,
-        years: history.payload.meta.years,
-        warningExtraBall: history.payload.meta.warningExtraBall,
-        warningDuplicate: history.payload.meta.warningDuplicate,
-      });
+    setPreviewText(preview);
 
-      setShowSmallHistoryWarning(
-        history.payload.meta.totalDraws < 20
-      );
-    }
+    setSummary({
+      rows: history.payload.meta.totalDraws,
+      format: history.payload.meta.source,
+      from: history.payload.meta.from,
+      to: history.payload.meta.to,
+      years: history.payload.meta.years,
+      warningExtraBall:
+        history.payload.meta.warningExtraBall,
+      warningDuplicate:
+        history.payload.meta.warningDuplicate,
+    });
+
+    setShowSmallHistoryWarning(
+      history.payload.meta.totalDraws < 20
+    );
   }, [history.payload]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setFile(e.target.files?.[0] || null);
   };
 
@@ -95,7 +102,9 @@ export default function HistoricalData() {
   // -----------------------------
   const applyHistory = async () => {
     if (hasExtra === null) {
-      setError("Please specify whether the lottery has an extra/bonus ball.");
+      setError(
+        "Please specify whether the lottery has an extra/bonus ball."
+      );
       return;
     }
 
@@ -125,28 +134,37 @@ export default function HistoricalData() {
         format = "txt";
         textContent = pasteText;
       } else {
-        setError("Please upload a file or paste history text.");
+        setError(
+          "Please upload a file or paste history text."
+        );
         return;
       }
 
       setHistoryLoading();
 
-      const res = await fetch(`${API_BASE}/history/apply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: textContent || "",
-          file_b64: fileB64 ?? "",
-          filetype: format,
-          main_count: mainBalls,
-          extra_count: hasExtra ? 1 : 0,
-          has_extra: hasExtra,
-        }),
-      });
+      const res = await fetch(
+        `${API_BASE}/history/apply`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: textContent || "",
+            file_b64: fileB64 ?? "",
+            filetype: format,
+            main_count: mainBalls,
+            extra_count: hasExtra ? 1 : 0,
+            has_extra: hasExtra,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(errText || `HTTP ${res.status}`);
+        throw new Error(
+          errText || `HTTP ${res.status}`
+        );
       }
 
       const data = await res.json();
@@ -163,19 +181,29 @@ export default function HistoricalData() {
         .filter(Boolean)
         .sort();
 
-      const flatNums = draws.flatMap((d: any) => d.main);
+      const flatNums = draws.flatMap(
+        (d: any) => d.main
+      );
 
       const years =
         allDates.length > 0
-          ? new Set(allDates.map((d: string) => d.slice(0, 4))).size
+          ? new Set(
+              allDates.map((d: string) =>
+                d.slice(0, 4)
+              )
+            ).size
           : undefined;
 
       const payload: HistoryPayload = {
         draws,
         ballCount: mainBalls,
         ranges: {
-          min: flatNums.length ? Math.min(...flatNums) : 0,
-          max: flatNums.length ? Math.max(...flatNums) : 0,
+          min: flatNums.length
+            ? Math.min(...flatNums)
+            : 0,
+          max: flatNums.length
+            ? Math.max(...flatNums)
+            : 0,
         },
         filters: {},
         meta: {
@@ -186,16 +214,21 @@ export default function HistoricalData() {
           to: allDates[allDates.length - 1],
           years,
           warningExtraBall:
-            data.stats?.warnings?.possible_extra_ball ?? false,
+            data.stats?.warnings
+              ?.possible_extra_ball ?? false,
           warningDuplicate:
-            data.stats?.warnings?.duplicate_numbers ?? false,
+            data.stats?.warnings
+              ?.duplicate_numbers ?? false,
         },
       };
 
       setHistoryPayload(payload);
-      setShowSmallHistoryWarning(draws.length < 20);
+      setShowSmallHistoryWarning(
+        draws.length < 20
+      );
     } catch (e: any) {
-      const msg = e?.message || "History loading failed.";
+      const msg =
+        e?.message || "History loading failed.";
       setError(msg);
       setHistoryError(msg);
     }
@@ -205,14 +238,23 @@ export default function HistoricalData() {
     <>
       <h1>Historical Data</h1>
 
-      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
-        Historical data defines the foundation for Analytics, Greedy,
-        Budget, and AI.<br />
-        The Generator works without history, but analytical insights
-        become more meaningful when history is loaded.
+      <div
+        style={{
+          fontSize: 13,
+          color: "#C8CCD4",
+          marginBottom: 12,
+        }}
+      >
+        Historical data defines the foundation for
+        Analytics, Greedy, Budget, and AI.
+        <br />
+        The Generator works without history, but
+        analytical insights become more meaningful
+        when history is loaded.
       </div>
 
       <CollapseSection
+        id="history.structure"
         title={
           <>
             Lottery Structure
@@ -229,30 +271,54 @@ Only main balls are used in analytics, Greedy and AI."
         <input
           type="number"
           min={1}
+          step={1}
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={mainBalls}
           onChange={(e) =>
-            setMainBalls(Math.max(1, Number(e.target.value) || 1))
+            setMainBalls(
+              Math.max(
+                1,
+                Number(e.target.value) || 1
+              )
+            )
           }
         />
 
-        <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
-          On mobile devices, the main ball count is fixed
-          to the default value.
+        <div
+          style={{
+            fontSize: 12,
+            color: "#9AA0AA",
+            marginTop: 6,
+          }}
+        >
+          On mobile devices, enter the number
+          manually using the numeric keyboard.
         </div>
 
         <div style={{ marginTop: 12 }}>
-          <strong>Extra / Bonus ball present?</strong>
+          <strong>
+            Extra / Bonus ball present?
+          </strong>
           <HelpTip
             text="Extra balls are ignored in analytics and optimization.
 Use YES if your lottery has a bonus or extra ball.
 Use NO if all numbers are main balls."
           />
-          <div style={{ display: "flex", gap: 16, marginTop: 6 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              marginTop: 6,
+            }}
+          >
             <label>
               <input
                 type="radio"
                 checked={hasExtra === false}
-                onChange={() => setHasExtra(false)}
+                onChange={() =>
+                  setHasExtra(false)
+                }
               />{" "}
               NO
             </label>
@@ -260,7 +326,9 @@ Use NO if all numbers are main balls."
               <input
                 type="radio"
                 checked={hasExtra === true}
-                onChange={() => setHasExtra(true)}
+                onChange={() =>
+                  setHasExtra(true)
+                }
               />{" "}
               YES
             </label>
@@ -268,7 +336,10 @@ Use NO if all numbers are main balls."
         </div>
       </CollapseSection>
 
-      <CollapseSection title="Upload History File">
+      <CollapseSection
+        id="history.upload"
+        title="Upload History File"
+      >
         <HelpTip
           text={
             "History format requirements:\n\n" +
@@ -294,24 +365,39 @@ Use NO if all numbers are main balls."
         rows={6}
       />
 
-      <CollapseSection title="Apply History" defaultOpen>
+      <CollapseSection
+        id="history.apply"
+        title="Apply History"
+        defaultOpen
+      >
         <button
-          onClick={applyHistory}
-          className="btn btn-primary"
-          disabled={hasExtra === null}
-        >
-          Apply History
-        </button>
+  onClick={applyHistory}
+  className="btn btn-primary"
+  disabled={hasExtra === null || isLoading}
+>
+  {isLoading ? "Applying…" : "Apply History"}
+</button>
+
 
         {history.payload && (
-          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: "#9AA0AA",
+              marginTop: 6,
+            }}
+          >
             To load a different history dataset,
             please refresh the page first.
           </div>
         )}
 
         {error && (
-          <div style={{ color: "#e74c3c", marginTop: 8 }}>{error}</div>
+          <div
+            style={{ color: "#e74c3c", marginTop: 8 }}
+          >
+            {error}
+          </div>
         )}
       </CollapseSection>
 
@@ -335,37 +421,52 @@ Verify dates and numbers before applying history."
       )}
 
       {summary && (
-        <CollapseSection title="Summary" defaultOpen>
+        <CollapseSection
+          id="history.summary"
+          title="Summary"
+          defaultOpen
+        >
           <p>Total rows detected: {summary.rows}</p>
 
           {summary.from && summary.to && (
             <p>
-              History period: {summary.from} → {summary.to}
+              History period: {summary.from} →{" "}
+              {summary.to}
             </p>
           )}
 
           {summary.years && (
-            <p>Date coverage: {summary.years} years</p>
+            <p>
+              Date coverage: {summary.years} years
+            </p>
           )}
 
           {showSmallHistoryWarning && (
-            <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
-              History size is small.
-              Some analytics and AI results may be less reliable.
+            <div
+              style={{
+                fontSize: 12,
+                color: "#9AA0AA",
+                marginTop: 6,
+              }}
+            >
+              History size is small. Some analytics
+              and AI results may be less reliable.
             </div>
           )}
 
           {summary.warningExtraBall && (
             <div className="warning">
-              ⚠️ Data does not match selected lottery structure.
-              Consider reviewing Extra ball setting.
+              ⚠️ Data does not match selected
+              lottery structure. Consider reviewing
+              Extra ball setting.
             </div>
           )}
 
           {summary.warningDuplicate && (
             <div className="warning">
-              ⚠️ Duplicate numbers detected while Extra ball = NO.
-              This may indicate incorrect lottery parameters.
+              ⚠️ Duplicate numbers detected while
+              Extra ball = NO. This may indicate
+              incorrect lottery parameters.
             </div>
           )}
 
