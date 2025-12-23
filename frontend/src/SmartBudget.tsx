@@ -119,7 +119,7 @@ export default function SmartBudget() {
       </div>
 
       {/* BASE NUMBERS */}
-      <CollapseSection title="Base Numbers" defaultOpen>
+      <CollapseSection id="budget.base" title="Base Numbers" defaultOpen>
         <textarea
           value={input.numbersInput}
           onChange={(e) =>
@@ -132,7 +132,7 @@ export default function SmartBudget() {
       </CollapseSection>
 
       {/* MODE SELECTION */}
-      <CollapseSection
+      <CollapseSection id="budget.mode"
         title={
           <>
             Optimization Mode
@@ -171,7 +171,7 @@ By Budget (PRO): fixed total budget and ticket cost."
       </CollapseSection>
 
       {/* PARAMETERS */}
-      <CollapseSection title="Budget Parameters" defaultOpen>
+      <CollapseSection id="budget.params" title="Budget Parameters" defaultOpen>
         {input.mode === "count" && (
           <label>
             Number of tickets:
@@ -240,7 +240,7 @@ By Budget (PRO): fixed total budget and ticket cost."
       </CollapseSection>
 
       {/* RUN */}
-      <CollapseSection title="Run Budget Optimizer" defaultOpen>
+      <CollapseSection id="budget.run" title="Run Budget Optimizer" defaultOpen>
         <button className="btn btn-primary" onClick={run}>
           Run Smart Budget
         </button>
@@ -254,7 +254,7 @@ By Budget (PRO): fixed total budget and ticket cost."
 
       {/* RESULTS */}
       {result && (
-        <CollapseSection title="Results" defaultOpen>
+        <CollapseSection id="budget.results" title="Results" defaultOpen>
           {result.coverage !== undefined && (
             <p>
               <strong>

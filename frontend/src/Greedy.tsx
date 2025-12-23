@@ -83,7 +83,7 @@ export default function Greedy() {
       </div>
 
       {/* INPUT NUMBERS */}
-      <CollapseSection title="Input Numbers" defaultOpen>
+      <CollapseSection id="greedy.input" title="Input Numbers" defaultOpen>
         <textarea
           value={input.numbersInput}
           onChange={(e) =>
@@ -96,7 +96,7 @@ export default function Greedy() {
       </CollapseSection>
 
       {/* MODE SELECTION */}
-      <CollapseSection
+      <CollapseSection id="greedy.mode"
         title={
           <>
             Mode Selection
@@ -154,7 +154,7 @@ Hybrid (PRO): balance between speed and coverage."
       </CollapseSection>
 
       {/* RUN */}
-      <CollapseSection title="Run Optimizer" defaultOpen>
+      <CollapseSection id="greedy.run" title="Run Optimizer" defaultOpen>
         <button
           className="btn btn-primary"
           onClick={run}
@@ -178,7 +178,7 @@ Hybrid (PRO): balance between speed and coverage."
 
       {/* RESULTS */}
       {result && (
-        <CollapseSection title="Results" defaultOpen>
+        <CollapseSection id="greedy.results" title="Results" defaultOpen>
           <p>
             <strong>
               Coverage
