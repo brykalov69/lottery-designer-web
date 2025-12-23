@@ -2,6 +2,8 @@ import CollapseSection from "../components/CollapseSection";
 import { useHistoryStore } from "../stores/historyStore";
 import { useSessionStore } from "../stores/useSessionStore";
 
+import { track } from "../utils/analytics"; // путь как в Generator
+
 type HistoryState = "shallow" | "optimal" | "over";
 type SystemType = "generator" | "greedy" | "budget" | "hybrid";
 
@@ -351,13 +353,16 @@ const visibleNextSteps = isPro
             }}
           >
             <button
-              className="btn btn-primary"
-              onClick={() =>
-                openProModal("ai_summary")
-              }
-            >
-              Unlock full AI Summary (PRO)
-            </button>
+  className="btn btn-primary"
+  onClick={() => {
+    track("unlock_pro_clicked", {
+      source: "ai_summary",
+    });
+    openProModal("ai_summary");
+  }}
+>
+  Unlock full AI Summary (PRO)
+</button>
           </div>
         )}
       </div>

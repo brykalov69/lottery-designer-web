@@ -15,6 +15,8 @@ import AITicketGeneratorPanel from "./ai/AITicketGeneratorPanel";
 import { useHistoryStore } from "./stores/historyStore";
 import { useSessionStore } from "./stores/useSessionStore";
 
+import { track } from "./utils/analytics"; // путь как в Generator
+
 export default function AI() {
   const { history } = useHistoryStore();
   const { isPro, openProModal } = useSessionStore();
@@ -54,11 +56,16 @@ export default function AI() {
             drift patterns, adjacency behavior and system recommendations.
           </p>
           <button
-            className="btn btn-secondary"
-            onClick={() => openProModal("ai_insights")}
-          >
-            🔒 Unlock PRO
-          </button>
+  className="btn btn-secondary"
+  onClick={() => {
+    track("unlock_pro_clicked", {
+      source: "ai_insights",
+    });
+    openProModal("ai_insights");
+  }}
+>
+  🔒 Unlock PRO
+</button>
         </div>
       )}
 

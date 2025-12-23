@@ -8,6 +8,9 @@ import { generateSystem } from "./api/api";
 import { parseNumberList } from "./utils/numberParser";
 import { useSessionStore } from "./stores/useSessionStore";
 
+import { track } from "./utils/analytics"; // путь проверь
+
+
 export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
   // STORE (persistent)
@@ -159,7 +162,13 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
       };
 
       const out = await generateSystem(payload);
-      setResult(out);
+setResult(out);
+
+track("system_generated", {
+  mode: "generator",
+  combinations: out?.count ?? 0,
+});
+
       setStatus("done");
     } catch (e: any) {
       setError(e?.message ?? "Generation failed");

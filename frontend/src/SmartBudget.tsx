@@ -5,6 +5,9 @@ import HelpTip from "./components/HelpTip";
 import { runBudget } from "./api/budget";
 import { useSessionStore } from "./stores/useSessionStore";
 
+import { track } from "./utils/analytics";
+
+
 export default function SmartBudget() {
   const session = useSessionStore();
   const { budget, isPro, openProModal } = session;
@@ -56,7 +59,7 @@ export default function SmartBudget() {
       session.setBudgetError(null);
       session.setBudgetResult(null);
 
-      const payload: any = {
+        const payload: any = {
         numbers,
         mode: input.mode,
       };
@@ -86,8 +89,14 @@ export default function SmartBudget() {
         payload.ticket_cost = c;
       }
 
-      const res = await runBudget(payload);
-      session.setBudgetResult(res);
+     const res = await runBudget(payload);
+session.setBudgetResult(res);
+
+track("budget_run", {
+  mode: input.mode,
+  systemSize: res?.system?.length ?? 0,
+});
+
     } catch (e: any) {
       session.setBudgetError(e?.message ?? "Budget optimization failed");
     }

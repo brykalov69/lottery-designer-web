@@ -4,6 +4,8 @@ import DataInputPanel from "./components/DataInputPanel";
 import { useHistoryStore } from "./stores/historyStore";
 import type { HistoryPayload } from "./stores/historyStore";
 import HelpTip from "./components/HelpTip";
+import { track } from "./utils/analytics"; // путь проверь
+
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -25,8 +27,6 @@ export default function HistoricalData() {
     setHistoryError,
   } = useHistoryStore();
   const isLoading = history.status === "loading";
-
-
 
   // -----------------------------
   // UI STATE
@@ -223,6 +223,10 @@ export default function HistoricalData() {
       };
 
       setHistoryPayload(payload);
+      track("history_applied", {
+  draws: payload.draws.length,
+  mainBalls: payload.ballCount,
+});
       setShowSmallHistoryWarning(
         draws.length < 20
       );

@@ -5,6 +5,9 @@ import HelpTip from "./components/HelpTip";
 import { runGreedy } from "./api/greedy";
 import { useSessionStore } from "./stores/useSessionStore";
 
+import { track } from "./utils/analytics";
+
+
 export default function Greedy() {
   const session = useSessionStore();
   const { greedy, isPro, openProModal } = session;
@@ -53,6 +56,11 @@ export default function Greedy() {
       });
 
       session.setGreedyResult(res);
+      track("greedy_run", {
+  mode: input.mode,
+  systemSize: res?.system?.length ?? 0,
+});
+
     } catch (e: any) {
       session.setGreedyError(e?.message ?? "Greedy failed");
     }
