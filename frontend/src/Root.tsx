@@ -1,6 +1,5 @@
 // frontend/src/Root.tsx
 import { Routes, Route, Link, useLocation } from "react-router-dom";
-import { useState } from "react";
 
 import Generator from "./Generator";
 import HistoricalData from "./HistoricalData";
@@ -13,6 +12,9 @@ import AIQuality from "./AIQuality";
 import ProModal from "./components/ProModal";
 import { useSessionStore } from "./stores/useSessionStore";
 
+import Landing from "./Landing";
+
+
 // -----------------------------
 // NAV TABS
 // -----------------------------
@@ -20,7 +22,7 @@ function NavTabs() {
   const location = useLocation();
 
   const tabs = [
-    { path: "/", label: "Generator" },
+    { path: "/generator", label: "Generator" },
     { path: "/history", label: "Historical Data" },
     { path: "/analytics", label: "Analytics" },
     { path: "/ai", label: "AI Insights" },
@@ -53,7 +55,7 @@ function NavTabs() {
 // ROOT
 // -----------------------------
 export default function Root() {
-  const [aiRanges] = useState<any>({});
+ 
 
   // 🔑 PRO MODAL STATE
   const { proModal, closeProModal } = useSessionStore();
@@ -69,7 +71,8 @@ export default function Root() {
       <NavTabs />
 
       <Routes>
-        <Route path="/" element={<Generator aiRanges={aiRanges} />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/generator" element={<Generator />} />
         <Route path="/history" element={<HistoricalData />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/ai" element={<AI />} />
