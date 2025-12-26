@@ -4,8 +4,7 @@ import DataInputPanel from "./components/DataInputPanel";
 import { useHistoryStore } from "./stores/historyStore";
 import type { HistoryPayload } from "./stores/historyStore";
 import HelpTip from "./components/HelpTip";
-import { track } from "./utils/analytics"; // путь проверь
-
+import { track } from "./utils/analytics";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -26,6 +25,7 @@ export default function HistoricalData() {
     setHistoryLoading,
     setHistoryError,
   } = useHistoryStore();
+
   const isLoading = history.status === "loading";
 
   // -----------------------------
@@ -47,7 +47,6 @@ export default function HistoricalData() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // warnings
   const [showSmallHistoryWarning, setShowSmallHistoryWarning] =
     useState(false);
 
@@ -142,29 +141,22 @@ export default function HistoricalData() {
 
       setHistoryLoading();
 
-      const res = await fetch(
-        `${API_BASE}/history/apply`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: textContent || "",
-            file_b64: fileB64 ?? "",
-            filetype: format,
-            main_count: mainBalls,
-            extra_count: hasExtra ? 1 : 0,
-            has_extra: hasExtra,
-          }),
-        }
-      );
+      const res = await fetch(`${API_BASE}/history/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: textContent || "",
+          file_b64: fileB64 ?? "",
+          filetype: format,
+          main_count: mainBalls,
+          extra_count: hasExtra ? 1 : 0,
+          has_extra: hasExtra,
+        }),
+      });
 
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(
-          errText || `HTTP ${res.status}`
-        );
+        throw new Error(errText || `HTTP ${res.status}`);
       }
 
       const data = await res.json();
@@ -181,29 +173,19 @@ export default function HistoricalData() {
         .filter(Boolean)
         .sort();
 
-      const flatNums = draws.flatMap(
-        (d: any) => d.main
-      );
+      const flatNums = draws.flatMap((d: any) => d.main);
 
       const years =
         allDates.length > 0
-          ? new Set(
-              allDates.map((d: string) =>
-                d.slice(0, 4)
-              )
-            ).size
+          ? new Set(allDates.map((d: string) => d.slice(0, 4))).size
           : undefined;
 
       const payload: HistoryPayload = {
         draws,
         ballCount: mainBalls,
         ranges: {
-          min: flatNums.length
-            ? Math.min(...flatNums)
-            : 0,
-          max: flatNums.length
-            ? Math.max(...flatNums)
-            : 0,
+          min: flatNums.length ? Math.min(...flatNums) : 0,
+          max: flatNums.length ? Math.max(...flatNums) : 0,
         },
         filters: {},
         meta: {
@@ -214,25 +196,21 @@ export default function HistoricalData() {
           to: allDates[allDates.length - 1],
           years,
           warningExtraBall:
-            data.stats?.warnings
-              ?.possible_extra_ball ?? false,
+            data.stats?.warnings?.possible_extra_ball ?? false,
           warningDuplicate:
-            data.stats?.warnings
-              ?.duplicate_numbers ?? false,
+            data.stats?.warnings?.duplicate_numbers ?? false,
         },
       };
 
       setHistoryPayload(payload);
       track("history_applied", {
-  draws: payload.draws.length,
-  mainBalls: payload.ballCount,
-});
-      setShowSmallHistoryWarning(
-        draws.length < 20
-      );
+        draws: payload.draws.length,
+        mainBalls: payload.ballCount,
+      });
+
+      setShowSmallHistoryWarning(draws.length < 20);
     } catch (e: any) {
-      const msg =
-        e?.message || "History loading failed.";
+      const msg = e?.message || "History loading failed.";
       setError(msg);
       setHistoryError(msg);
     }
@@ -242,19 +220,12 @@ export default function HistoricalData() {
     <>
       <h1>Historical Data</h1>
 
-      <div
-        style={{
-          fontSize: 13,
-          color: "#C8CCD4",
-          marginBottom: 12,
-        }}
-      >
-        Historical data defines the foundation for
-        Analytics, Greedy, Budget, and AI.
+      <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
+        Historical data defines the foundation for Analytics, Greedy,
+        Budget, and AI.
         <br />
-        The Generator works without history, but
-        analytical insights become more meaningful
-        when history is loaded.
+        The Generator works without history, but analytical insights
+        become more meaningful when history is loaded.
       </div>
 
       <CollapseSection
@@ -281,29 +252,17 @@ Only main balls are used in analytics, Greedy and AI."
           value={mainBalls}
           onChange={(e) =>
             setMainBalls(
-              Math.max(
-                1,
-                Number(e.target.value) || 1
-              )
+              Math.max(1, Number(e.target.value) || 1)
             )
           }
         />
 
-        <div
-          style={{
-            fontSize: 12,
-            color: "#9AA0AA",
-            marginTop: 6,
-          }}
-        >
-          On mobile devices, enter the number
-          manually using the numeric keyboard.
+        <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+          On mobile devices, enter the number manually using the numeric keyboard.
         </div>
 
         <div style={{ marginTop: 12 }}>
-          <strong>
-            Extra / Bonus ball present?
-          </strong>
+          <strong>Extra / Bonus ball present?</strong>
           <HelpTip
             text="Extra balls are ignored in analytics and optimization.
 Use YES if your lottery has a bonus or extra ball.
@@ -314,15 +273,14 @@ Use NO if all numbers are main balls."
               display: "flex",
               gap: 16,
               marginTop: 6,
+              flexWrap: "wrap",
             }}
           >
             <label>
               <input
                 type="radio"
                 checked={hasExtra === false}
-                onChange={() =>
-                  setHasExtra(false)
-                }
+                onChange={() => setHasExtra(false)}
               />{" "}
               NO
             </label>
@@ -330,9 +288,7 @@ Use NO if all numbers are main balls."
               <input
                 type="radio"
                 checked={hasExtra === true}
-                onChange={() =>
-                  setHasExtra(true)
-                }
+                onChange={() => setHasExtra(true)}
               />{" "}
               YES
             </label>
@@ -342,18 +298,22 @@ Use NO if all numbers are main balls."
 
       <CollapseSection
         id="history.upload"
-        title="Upload History File"
+        title={
+          <>
+            Upload History File
+            <HelpTip
+              text={
+                "History format requirements:\n\n" +
+                "• Each row must represent one draw\n" +
+                "• The first column defines draw order or date\n" +
+                "• Dates must be numeric (e.g. 2024-01-15)\n" +
+                "• Text labels or lottery names are not supported\n" +
+                "• Values must be comma-separated"
+              }
+            />
+          </>
+        }
       >
-        <HelpTip
-          text={
-            "History format requirements:\n\n" +
-            "• Each row must represent one draw\n" +
-            "• The first column defines draw order or date\n" +
-            "• Dates must be numeric (e.g. 2024-01-15)\n" +
-            "• Text labels or lottery names are not supported\n" +
-            "• Values must be comma-separated"
-          }
-        />
         <input
           type="file"
           accept=".txt,.csv,.xlsx"
@@ -369,37 +329,35 @@ Use NO if all numbers are main balls."
         rows={6}
       />
 
-      <CollapseSection
-        id="history.apply"
-        title="Apply History"
-        defaultOpen
-      >
-        <button
-  onClick={applyHistory}
-  className="btn btn-primary"
-  disabled={hasExtra === null || isLoading}
->
-  {isLoading ? "Applying…" : "Apply History"}
-</button>
-
-
-        {history.payload && (
+      <CollapseSection id="history.apply" title="Apply History" defaultOpen>
+        {hasExtra === null && (
           <div
             style={{
               fontSize: 12,
-              color: "#9AA0AA",
-              marginTop: 6,
+              color: "#e67e22",
+              marginBottom: 6,
             }}
           >
-            To load a different history dataset,
-            please refresh the page first.
+            Please select whether the lottery has an extra / bonus ball.
+          </div>
+        )}
+
+        <button
+          onClick={applyHistory}
+          className="btn btn-primary"
+          disabled={hasExtra === null || isLoading}
+        >
+          {isLoading ? "Applying…" : "Apply History"}
+        </button>
+
+        {history.payload && (
+          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+            To load a different history dataset, please refresh the page first.
           </div>
         )}
 
         {error && (
-          <div
-            style={{ color: "#e74c3c", marginTop: 8 }}
-          >
+          <div style={{ color: "#e74c3c", marginTop: 8 }}>
             {error}
           </div>
         )}
@@ -425,52 +383,36 @@ Verify dates and numbers before applying history."
       )}
 
       {summary && (
-        <CollapseSection
-          id="history.summary"
-          title="Summary"
-          defaultOpen
-        >
+        <CollapseSection id="history.summary" title="Summary" defaultOpen>
           <p>Total rows detected: {summary.rows}</p>
 
           {summary.from && summary.to && (
             <p>
-              History period: {summary.from} →{" "}
-              {summary.to}
+              History period: {summary.from} → {summary.to}
             </p>
           )}
 
           {summary.years && (
-            <p>
-              Date coverage: {summary.years} years
-            </p>
+            <p>Date coverage: {summary.years} years</p>
           )}
 
           {showSmallHistoryWarning && (
-            <div
-              style={{
-                fontSize: 12,
-                color: "#9AA0AA",
-                marginTop: 6,
-              }}
-            >
-              History size is small. Some analytics
-              and AI results may be less reliable.
+            <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+              History size is small. Some analytics and AI results may be less reliable.
             </div>
           )}
 
           {summary.warningExtraBall && (
             <div className="warning">
-              ⚠️ Data does not match selected
-              lottery structure. Consider reviewing
-              Extra ball setting.
+              ⚠️ Data does not match selected lottery structure.
+              Consider reviewing Extra ball setting.
             </div>
           )}
 
           {summary.warningDuplicate && (
             <div className="warning">
-              ⚠️ Duplicate numbers detected while
-              Extra ball = NO. This may indicate
-              incorrect lottery parameters.
+              ⚠️ Duplicate numbers detected while Extra ball = NO.
+              This may indicate incorrect lottery parameters.
             </div>
           )}
 
