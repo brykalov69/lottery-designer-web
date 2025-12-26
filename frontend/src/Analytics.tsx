@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CollapseSection from "./components/CollapseSection";
 import { useHistoryStore } from "./stores/historyStore";
-import { useSessionStore } from "./stores/useSessionStore";
 import HelpTip from "./components/HelpTip";
+import { IS_PRO } from "./config/flags";
+import { useSessionStore } from "./stores/useSessionStore";
 
 type Tab = "triplets" | "quads" | "quints";
 type ComboCount = [number[], number];
@@ -32,9 +33,7 @@ function combosK(arr: number[], k: number): number[][] {
 export default function Analytics() {
   const navigate = useNavigate();
   const { history } = useHistoryStore();
-
-  // 🔑 PRO STATE
-  const { isPro, openProModal } = useSessionStore();
+  const { openProModal } = useSessionStore();
 
   const [tab, setTab] = useState<Tab>("triplets");
   const [limit, setLimit] = useState<number>(20);
@@ -157,17 +156,6 @@ export default function Analytics() {
     <>
       <h1>Analytics</h1>
 
-      {/* 🔒 DEV TEST BUTTON (LOCAL ONLY) */}
-      {import.meta.env.DEV && (
-        <button
-          className="btn btn-secondary"
-          style={{ opacity: 0.6, marginBottom: 8 }}
-          onClick={() => openProModal("analytics_quads")}
-        >
-          🔒 Test PRO Modal (dev)
-        </button>
-      )}
-
       <div style={{ fontSize: 13, color: "#C8CCD4", marginBottom: 12 }}>
         Analytics identify number combinations that appeared together
         multiple times in historical draws.
@@ -175,18 +163,8 @@ export default function Analytics() {
         Only main balls are analyzed. Bonus or extra balls are ignored.
       </div>
 
-      <CollapseSection
-        id="analytics.view"
-        title="View"
-        defaultOpen
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
+      <CollapseSection id="analytics.view" title="View" defaultOpen>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             className={`btn ${
               tab === "triplets" ? "btn-active" : "btn-secondary"
@@ -203,7 +181,7 @@ export default function Analytics() {
             }`}
             onClick={() => setTab("quads")}
           >
-            Quads
+            Quads {!IS_PRO && "🔒"}
             <HelpTip text="Quads are rare 4-number combinations and are available in PRO." />
           </button>
 
@@ -213,46 +191,44 @@ export default function Analytics() {
             }`}
             onClick={() => setTab("quints")}
           >
-            Quints
+            Quints {!IS_PRO && "🔒"}
             <HelpTip text="Quints are very rare 5-number patterns available in PRO." />
           </button>
         </div>
       </CollapseSection>
 
-      <CollapseSection
-        id="analytics.options"
-        title="Options"
-        defaultOpen
-      >
-        <label>Limit</label>
-        <input
-          type="number"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={limit}
-          min={0}
-          onChange={(e) => setLimit(Number(e.target.value))}
-          style={{ width: 120, marginLeft: 8 }}
-        />
+      <CollapseSection id="analytics.options" title="Options" defaultOpen>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <label>
+            Limit
+            <input
+              type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={limit}
+              min={0}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              style={{ width: 120, marginLeft: 8 }}
+            />
+          </label>
 
-        <label style={{ marginLeft: 16 }}>Sort</label>
-        <select
-          value={sortOrder}
-          onChange={(e) =>
-            setSortOrder(e.target.value as "asc" | "desc")
-          }
-          style={{ marginLeft: 8 }}
-        >
-          <option value="desc">Most frequent</option>
-          <option value="asc">Least frequent</option>
-        </select>
+          <label>
+            Sort
+            <select
+              value={sortOrder}
+              onChange={(e) =>
+                setSortOrder(e.target.value as "asc" | "desc")
+              }
+              style={{ marginLeft: 8 }}
+            >
+              <option value="desc">Most frequent</option>
+              <option value="asc">Least frequent</option>
+            </select>
+          </label>
+        </div>
       </CollapseSection>
 
-      <CollapseSection
-        id="analytics.results"
-        title="Results"
-        defaultOpen
-      >
+      <CollapseSection id="analytics.results" title="Results" defaultOpen>
         <div style={{ fontSize: 12, color: "#9AA0AA", marginBottom: 8 }}>
           Limited historical data or active filters may reduce available results.
         </div>
@@ -265,7 +241,7 @@ export default function Analytics() {
 
         {/* Quads (PRO) */}
         {tab === "quads" &&
-          (isPro
+          (IS_PRO
             ? comboStats.quads.length > 0
               ? renderCards(comboStats.quads)
               : renderEmptyWarning()
@@ -277,7 +253,7 @@ export default function Analytics() {
 
         {/* Quints (PRO) */}
         {tab === "quints" &&
-          (isPro
+          (IS_PRO
             ? comboStats.quints.length > 0
               ? renderCards(comboStats.quints)
               : renderEmptyWarning()
