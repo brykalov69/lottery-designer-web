@@ -360,69 +360,84 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
 </CollapseSection>
 
       {/* ---------------- GENERATE & RESULT ---------------- */}
-      <CollapseSection
-        id="generator.generateResult"
-        title="Generate & Result"
-        defaultOpen
-      >
-        <button
-          onClick={handleGenerate}
-          className="btn btn-primary"
-          disabled={status === "running"}
-          style={{ width: "100%", maxWidth: 320 }}
-        >
-          {status === "running" ? "Generating…" : "Generate System"}
-        </button>
+<div className="collapse-card">
+  <div
+    className="collapse-header"
+    style={{ cursor: "default" }}
+  >
+    <strong>Generate & Result</strong>
+  </div>
 
-        {status === "running" && isPreview && (
-          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
-            Engine is waking up… showing a quick preview meanwhile.
+  <div className="collapse-content">
+    <button
+      onClick={handleGenerate}
+      className="btn btn-primary"
+      disabled={status === "running"}
+      style={{ width: "100%", maxWidth: 320 }}
+    >
+      {status === "running" ? "Generating…" : "Generate System"}
+    </button>
+
+    {status === "running" && isPreview && (
+      <div
+        style={{
+          fontSize: 12,
+          color: "#9AA0AA",
+          marginTop: 6,
+          lineHeight: 1.4,
+        }}
+      >
+        Engine is waking up… showing a quick preview meanwhile.
+      </div>
+    )}
+
+    {error && (
+      <div style={{ color: "#ff6b6b", marginTop: 8 }}>
+        {error}
+      </div>
+    )}
+
+    {result && (
+      <>
+        <DataInputPanel
+          title="Generated Combinations"
+          subtitle={
+            isPreview
+              ? "Preview (engine is waking up)"
+              : `Total combinations: ${result.count}`
+          }
+          value={resultText}
+          onChange={() => {}}
+          readOnly
+          rows={10}
+          footer={
+            !isPreview && (
+              <ExportPanel
+                rows={result.combinations}
+                filename="generated_system"
+              />
+            )
+          }
+        />
+
+        {/* B1 */}
+        <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+          Some highly sequential combinations were excluded
+          to improve diversity.
+        </div>
+
+        {/* B2 */}
+        {showGroupWarning && (
+          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 4 }}>
+            Some group numbers are not present in Base Numbers
+            and were ignored.
           </div>
         )}
-
-        {error && (
-          <div style={{ color: "#ff6b6b", marginTop: 8 }}>{error}</div>
-        )}
-
-        {result && (
-          <>
-            <DataInputPanel
-              title="Generated Combinations"
-              subtitle={
-                isPreview
-                  ? "Preview (engine is waking up)"
-                  : `Total combinations: ${result.count}`
-              }
-              value={resultText}
-              onChange={() => {}}
-              readOnly
-              rows={10}
-              footer={
-                !isPreview && (
-                  <ExportPanel
-                    rows={result.combinations}
-                    filename="generated_system"
-                  />
-                )
-              }
-            />
-
-            {/* B1 */}
-            <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
-              Some highly sequential combinations were excluded
-              to improve diversity.
-            </div>
-
-            {/* B2 */}
-            {showGroupWarning && (
-              <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 4 }}>
-                Some group numbers are not present in Base Numbers
-                and were ignored.
-              </div>
-            )}
-          </>
-        )}
-      </CollapseSection>
-    </>
-  );
+      </>
+    )}
+  </div>
+  </div>
+  </>
+);
 }
+
