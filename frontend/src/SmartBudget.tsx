@@ -2,15 +2,16 @@ import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
 import HelpTip from "./components/HelpTip";
+
 import { runBudget } from "./api/budget";
 import { useSessionStore } from "./stores/useSessionStore";
+import { IS_PRO } from "./config/flags";
 
 import { track } from "./utils/analytics";
 
-
 export default function SmartBudget() {
   const session = useSessionStore();
-  const { budget, isPro, openProModal } = session;
+  const { budget, openProModal } = session;
 
   const input = budget.input;
   const result = budget.result;
@@ -26,7 +27,7 @@ export default function SmartBudget() {
       .filter((n) => !isNaN(n));
 
   const setMode = (mode: "count" | "money") => {
-    if (mode === "money" && !isPro) {
+    if (mode === "money" && !IS_PRO) {
       openProModal("budget_money");
       return;
     }
@@ -59,7 +60,7 @@ export default function SmartBudget() {
       session.setBudgetError(null);
       session.setBudgetResult(null);
 
-        const payload: any = {
+      const payload: any = {
         numbers,
         mode: input.mode,
       };
@@ -74,7 +75,7 @@ export default function SmartBudget() {
       }
 
       if (input.mode === "money") {
-        if (!isPro) {
+        if (!IS_PRO) {
           openProModal("budget_money");
           return;
         }
@@ -89,14 +90,13 @@ export default function SmartBudget() {
         payload.ticket_cost = c;
       }
 
-     const res = await runBudget(payload);
-session.setBudgetResult(res);
+      const res = await runBudget(payload);
+      session.setBudgetResult(res);
 
-track("budget_run", {
-  mode: input.mode,
-  systemSize: res?.system?.length ?? 0,
-});
-
+      track("budget_run", {
+        mode: input.mode,
+        systemSize: res?.system?.length ?? 0,
+      });
     } catch (e: any) {
       session.setBudgetError(e?.message ?? "Budget optimization failed");
     }
@@ -141,7 +141,8 @@ track("budget_run", {
       </CollapseSection>
 
       {/* MODE SELECTION */}
-      <CollapseSection id="budget.mode"
+      <CollapseSection
+        id="budget.mode"
         title={
           <>
             Optimization Mode
@@ -154,7 +155,13 @@ By Budget (PRO): fixed total budget and ticket cost."
         }
         defaultOpen
       >
-        <div style={{ display: "flex", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <button
             className={
               input.mode === "count"
@@ -174,7 +181,7 @@ By Budget (PRO): fixed total budget and ticket cost."
             }
             onClick={() => setMode("money")}
           >
-            By Budget {!isPro && "🔒"}
+            By Budget {!IS_PRO && "🔒"}
           </button>
         </div>
       </CollapseSection>
@@ -193,14 +200,20 @@ By Budget (PRO): fixed total budget and ticket cost."
                   ticketCount: e.target.value,
                 })
               }
-              style={{ width: 100, marginLeft: 8 }}
+              style={{ width: 120, marginLeft: 8 }}
             />
           </label>
         )}
 
         {input.mode === "money" && (
           <>
-            <div style={{ display: "flex", gap: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                flexWrap: "wrap",
+              }}
+            >
               <label>
                 Total budget:
                 <input
