@@ -309,6 +309,55 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
           </div>
         </div>
       </div>
+<CollapseSection
+  id="generator.groupLimits"
+  title={
+    <>
+      Group Quotas & Limits
+      <HelpTip
+        text={
+          "The total number of selected group quotas\n" +
+          "(A + B + C) must equal the number of balls\n" +
+          "in the lottery system being generated.\n\n" +
+          "For example:\n" +
+          "• 5-ball lottery → A + B + C = 5\n" +
+          "• 6-ball lottery → A + B + C = 6\n\n" +
+          "Group limits restrict how many numbers\n" +
+          "from each group may appear in a combination.\n\n" +
+          "Example:\n" +
+          "A max = 2 → no more than 2 numbers from Group A\n" +
+          "will appear in any generated combination."
+        }
+      />
+    </>
+  }
+  defaultOpen
+>
+  <input
+    placeholder="A max"
+    value={input.quotaA}
+    onChange={(e) => setInput({ quotaA: e.target.value })}
+    style={{ width: "100%" }}
+  />
+  <input
+    placeholder="B max"
+    value={input.quotaB}
+    onChange={(e) => setInput({ quotaB: e.target.value })}
+    style={{ width: "100%" }}
+  />
+  <input
+    placeholder="C max"
+    value={input.quotaC}
+    onChange={(e) => setInput({ quotaC: e.target.value })}
+    style={{ width: "100%" }}
+  />
+  <input
+    placeholder="Max combinations"
+    value={input.limit}
+    onChange={(e) => setInput({ limit: e.target.value })}
+    style={{ width: "100%" }}
+  />
+</CollapseSection>
 
       {/* ---------------- GENERATE & RESULT ---------------- */}
       <CollapseSection
