@@ -1,5 +1,6 @@
 import CollapseSection from "./components/CollapseSection";
 import { useSessionStore } from "./stores/useSessionStore";
+import { IS_PRO } from "./config/flags";
 
 import SingleSystemQuality from "./ai/quality/SingleSystemQuality";
 import CompareSystems from "./ai/quality/CompareSystems";
@@ -74,7 +75,6 @@ function computeMetrics(system: number[][]): Metrics {
 
 export default function AIQuality() {
   const {
-    isPro,
     openProModal,
     greedy,
     budget,
@@ -131,7 +131,7 @@ export default function AIQuality() {
               setUICollapse("aiQuality.single.greedy", true);
 
               // 🔓 auto-open comparison if possible
-              if (aiQuality.useBudget && isPro) {
+              if (aiQuality.useBudget && IS_PRO) {
                 setUICollapse("aiQuality.compare", true);
               }
             }}
@@ -155,7 +155,7 @@ export default function AIQuality() {
               setUICollapse("aiQuality.single.budget", true);
 
               // 🔓 auto-open comparison if possible
-              if (aiQuality.useGreedy && isPro) {
+              if (aiQuality.useGreedy && IS_PRO) {
                 setUICollapse("aiQuality.compare", true);
               }
             }}
@@ -197,7 +197,7 @@ export default function AIQuality() {
         id="aiQuality.compare"
         title="Compare Greedy vs Budget (PRO)"
       >
-        {isPro ? (
+        {IS_PRO ? (
           greedySystem && budgetSystem ? (
             <>
               <CompareSystems
