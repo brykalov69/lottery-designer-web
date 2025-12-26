@@ -337,3 +337,7 @@ def ai_next(limit: int = 20):
 @app.get("/ai_tickets")
 def ai_tickets():
     return compute_ai_tickets()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
