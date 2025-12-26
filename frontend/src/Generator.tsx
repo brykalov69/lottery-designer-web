@@ -8,8 +8,17 @@ import { generateSystem } from "./api/api";
 import { parseNumberList } from "./utils/numberParser";
 import { useSessionStore } from "./stores/useSessionStore";
 
-import { track } from "./utils/analytics"; // путь проверь
+import { track } from "./utils/analytics";
 
+// --------------------------------------------------
+// INSTANT PREVIEW (demo-first, honest UX)
+// --------------------------------------------------
+function generatePreviewCombinations(): number[][] {
+  return [
+    [1, 2, 3, 4, 5],
+    [2, 3, 4, 5, 6],
+  ];
+}
 
 export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
@@ -28,9 +37,10 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   const setError = session.setGeneratorError;
 
   // -----------------------------
-  // UI WARNINGS (approved logic)
+  // UI STATE
   // -----------------------------
   const [showGroupWarning, setShowGroupWarning] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
 
   // -----------------------------
   // AI → Generator
@@ -48,7 +58,13 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // GENERATE
   // -----------------------------
   const handleGenerate = async () => {
-    setResult(null);
+    // 🔥 Instant preview
+    setResult({
+      combinations: generatePreviewCombinations(),
+      count: 2,
+    });
+    setIsPreview(true);
+
     setError(null);
     setShowGroupWarning(false);
 
@@ -65,6 +81,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         });
         if (!baseRes.ok) {
           setStatus("idle");
+          setIsPreview(false);
           return;
         }
         baseNumbers = baseRes.numbers;
@@ -81,6 +98,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         });
         if (!fixedRes.ok) {
           setStatus("idle");
+          setIsPreview(false);
           return;
         }
         fixedPositions = { 0: fixedRes.numbers };
@@ -95,6 +113,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         });
         if (!forcedRes.ok) {
           setStatus("idle");
+          setIsPreview(false);
           return;
         }
         forcedNumbers = forcedRes.numbers;
@@ -118,11 +137,12 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
           };
         } catch {
           setStatus("idle");
+          setIsPreview(false);
           return;
         }
       }
 
-      // ---- B2: GROUPS OUTSIDE BASE WARNING ----
+      // ---- GROUP WARNING (B2) ----
       if (groups) {
         const baseSet = new Set(baseNumbers);
         const allGroupNumbers = [
@@ -135,7 +155,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
         }
       }
 
-      // ---- PAYLOAD (CANONICAL) ----
+      // ---- PAYLOAD ----
       const payload = {
         numbers: baseNumbers,
         limit:
@@ -162,15 +182,18 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
       };
 
       const out = await generateSystem(payload);
-setResult(out);
 
-track("system_generated", {
-  mode: "generator",
-  combinations: out?.count ?? 0,
-});
+      setResult(out);
+      setIsPreview(false);
+
+      track("system_generated", {
+        mode: "generator",
+        combinations: out?.count ?? 0,
+      });
 
       setStatus("done");
     } catch (e: any) {
+      setIsPreview(false);
       setError(e?.message ?? "Generation failed");
       setStatus("error");
     }
@@ -196,18 +219,15 @@ track("system_generated", {
         Allowed range: <strong>1–99</strong>.<br /><br />
         If no numbers are entered, a default example system is generated
         to demonstrate how the tool works.
-        Currently, the Generator is configured
-for 5-ball lottery formats.
-
-Support for 6-ball and 7-ball systems
-will be added in a future update.
+        Currently, the Generator is configured for 5-ball lottery formats.
       </div>
 
+      {/* ---------------- BASE NUMBERS ---------------- */}
       <DataInputPanel
         title={
           <>
             Base Numbers
-            <HelpTip text="Base Numbers define the main pool used to generate combinations. Add more numbers to increase variety, or fewer to generate tighter systems." />
+            <HelpTip text="Base Numbers define the main pool used to generate combinations. Add more numbers for variety, fewer for tighter systems." />
           </>
         }
         subtitle="Enter numbers manually"
@@ -216,6 +236,7 @@ will be added in a future update.
         hint="Use spaces, commas, or paste from PDF"
       />
 
+      {/* ---------------- FIXED POSITION ---------------- */}
       <DataInputPanel
         title={
           <>
@@ -229,6 +250,7 @@ will be added in a future update.
         hint="Optional. Leave empty to disable."
       />
 
+      {/* ---------------- FORCED NUMBERS ---------------- */}
       <DataInputPanel
         title={
           <>
@@ -242,17 +264,16 @@ will be added in a future update.
         hint="Optional."
       />
 
-      {/* GROUPS — rollback layout, mobile-safe */}
+      {/* ---------------- GROUPS ---------------- */}
       <div className="collapse-card">
         <div className="collapse-content">
           <div style={{ fontWeight: 600, marginBottom: 4 }}>
             Groups
             <HelpTip
               text={
-                "Groups are filters, not independent number pools.\n\n" +
+                "Groups are filters, not independent pools.\n\n" +
                 "Base Numbers define the generation pool.\n" +
-                "Groups only apply to numbers already present in Base Numbers.\n\n" +
-                "If Base Numbers are provided, group numbers outside Base will be ignored."
+                "Groups only apply to numbers already present in Base Numbers."
               }
             />
           </div>
@@ -289,64 +310,12 @@ will be added in a future update.
         </div>
       </div>
 
-     <CollapseSection
-  id="generator.groupLimits"
-  title={
-    <>
-      Group Quotas & Limits
-      <HelpTip
-        text={
-          "The total number of selected group quotas\n" +
-          "(A + B + C) must equal the number of balls\n" +
-          "in the lottery system being generated.\n\n" +
-          "For example:\n" +
-          "• 5-ball lottery → A + B + C = 5\n" +
-          "• 6-ball lottery → A + B + C = 6\n\n" +
-          "Group limits restrict how many numbers\n" +
-          "from each group may appear in a combination.\n\n" +
-          "Example:\n" +
-          "A max = 2 → no more than 2 numbers from Group A\n" +
-          "will appear in any generated combination."
-        }
-      />
-    </>
-  }
-  defaultOpen
->
-
-
-        <input
-          placeholder="A max"
-          value={input.quotaA}
-          onChange={(e) => setInput({ quotaA: e.target.value })}
-          style={{ width: "100%" }}
-        />
-        <input
-          placeholder="B max"
-          value={input.quotaB}
-          onChange={(e) => setInput({ quotaB: e.target.value })}
-          style={{ width: "100%" }}
-        />
-        <input
-          placeholder="C max"
-          value={input.quotaC}
-          onChange={(e) => setInput({ quotaC: e.target.value })}
-          style={{ width: "100%" }}
-        />
-        <input
-          placeholder="Max combinations"
-          value={input.limit}
-          onChange={(e) => setInput({ limit: e.target.value })}
-          style={{ width: "100%" }}
-        />
-      </CollapseSection>
-
+      {/* ---------------- GENERATE & RESULT ---------------- */}
       <CollapseSection
-  id="generator.generateResult"
-  title="Generate & Result"
-  defaultOpen
->
-
+        id="generator.generateResult"
+        title="Generate & Result"
+        defaultOpen
+      >
         <button
           onClick={handleGenerate}
           className="btn btn-primary"
@@ -356,26 +325,36 @@ will be added in a future update.
           {status === "running" ? "Generating…" : "Generate System"}
         </button>
 
-        {error && (
-          <div style={{ color: "#ff6b6b", marginTop: 8 }}>
-            {error}
+        {status === "running" && isPreview && (
+          <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
+            Engine is waking up… showing a quick preview meanwhile.
           </div>
+        )}
+
+        {error && (
+          <div style={{ color: "#ff6b6b", marginTop: 8 }}>{error}</div>
         )}
 
         {result && (
           <>
             <DataInputPanel
               title="Generated Combinations"
-              subtitle={`Total combinations: ${result.count}`}
+              subtitle={
+                isPreview
+                  ? "Preview (engine is waking up)"
+                  : `Total combinations: ${result.count}`
+              }
               value={resultText}
               onChange={() => {}}
               readOnly
               rows={10}
               footer={
-                <ExportPanel
-                  rows={result.combinations}
-                  filename="generated_system"
-                />
+                !isPreview && (
+                  <ExportPanel
+                    rows={result.combinations}
+                    filename="generated_system"
+                  />
+                )
               }
             />
 
