@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
@@ -41,6 +41,7 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
   // -----------------------------
   const [showGroupWarning, setShowGroupWarning] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
+const previewTrackedRef = useRef(false);
 
   // -----------------------------
   // AI → Generator
@@ -54,10 +55,21 @@ export default function Generator({ aiRanges }: { aiRanges?: any }) {
     }
   }, [aiRanges]);
 
+  useEffect(() => {
+  if (isPreview && !previewTrackedRef.current) {
+    previewTrackedRef.current = true;
+
+    track("preview_shown", {
+      page: "generator",
+    });
+  }
+}, [isPreview]);
+
   // -----------------------------
   // GENERATE
   // -----------------------------
   const handleGenerate = async () => {
+    previewTrackedRef.current = false;
     // 🔥 Instant preview
     setResult({
       combinations: generatePreviewCombinations(),
