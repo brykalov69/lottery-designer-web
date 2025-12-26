@@ -14,12 +14,13 @@ import AITicketGeneratorPanel from "./ai/AITicketGeneratorPanel";
 
 import { useHistoryStore } from "./stores/historyStore";
 import { useSessionStore } from "./stores/useSessionStore";
+import { IS_PRO } from "./config/flags";
 
-import { track } from "./utils/analytics"; // путь как в Generator
+import { track } from "./utils/analytics";
 
 export default function AI() {
   const { history } = useHistoryStore();
-  const { isPro, openProModal } = useSessionStore();
+  const { openProModal } = useSessionStore();
 
   return (
     <>
@@ -44,8 +45,8 @@ export default function AI() {
         <GlobalFrequencyCards />
       </CollapseSection>
 
-      {/* ========================= PRO INSIGHTS BLOCK ========================= */}
-      {!isPro && (
+      {/* ========================= PRO INSIGHTS GATE ========================= */}
+      {!IS_PRO && (
         <div
           className="collapse-card"
           style={{ padding: 16, textAlign: "center", marginBottom: 12 }}
@@ -56,16 +57,16 @@ export default function AI() {
             drift patterns, adjacency behavior and system recommendations.
           </p>
           <button
-  className="btn btn-secondary"
-  onClick={() => {
-    track("unlock_pro_clicked", {
-      source: "ai_insights",
-    });
-    openProModal("ai_insights");
-  }}
->
-  🔒 Unlock PRO
-</button>
+            className="btn btn-secondary"
+            onClick={() => {
+              track("unlock_pro_clicked", {
+                source: "ai_insights",
+              });
+              openProModal("ai_insights");
+            }}
+          >
+            🔒 Unlock PRO
+          </button>
         </div>
       )}
 
@@ -74,7 +75,7 @@ export default function AI() {
         id="ai.perBallPositional"
         title="Per-Ball Positional AI"
       >
-        <PerBallPositionalPanel isPro={isPro} />
+        <PerBallPositionalPanel isPro={IS_PRO} />
       </CollapseSection>
 
       {/* AI RECOMMENDED PATTERNS */}
@@ -82,20 +83,20 @@ export default function AI() {
         id="ai.recommendedPatterns"
         title="AI Recommended Patterns"
       >
-        <AIRecommendedPatternsPanel isPro={isPro} />
+        <AIRecommendedPatternsPanel isPro={IS_PRO} />
       </CollapseSection>
 
-      {/* ========================= ADJACENCY TEASER (NO COLLAPSE) ========================= */}
+      {/* ========================= ADJACENCY (TEASER) ========================= */}
       <div className="collapse-card">
         <div className="collapse-header">
           Adjacency & Follow-Up Analysis
         </div>
         <div className="collapse-content">
           <LockedTeaser
-            locked={!isPro}
+            locked={!IS_PRO}
             cta="Unlock PRO to explore full follow-up patterns and transition matrices."
           >
-            <AdjacencyPreview isPro={isPro} />
+            <AdjacencyPreview isPro={IS_PRO} />
           </LockedTeaser>
         </div>
       </div>
@@ -105,7 +106,7 @@ export default function AI() {
         id="ai.sequentialDrift"
         title="Sequential Drift Patterns"
       >
-        <SequentialDriftPanel isPro={isPro} />
+        <SequentialDriftPanel isPro={IS_PRO} />
       </CollapseSection>
 
       {/* NEXT DRAW */}
@@ -113,7 +114,7 @@ export default function AI() {
         id="ai.nextDraw"
         title="Next Draw Predictor"
       >
-        <NextDrawPredictorPanel isPro={isPro} />
+        <NextDrawPredictorPanel isPro={IS_PRO} />
       </CollapseSection>
 
       {/* AI TICKET GENERATOR */}
@@ -121,7 +122,7 @@ export default function AI() {
         id="ai.ticketGenerator"
         title="AI Ticket Generator"
       >
-        <AITicketGeneratorPanel isPro={isPro} />
+        <AITicketGeneratorPanel isPro={IS_PRO} />
       </CollapseSection>
 
       {/* AI SMART TIPS */}
@@ -129,20 +130,20 @@ export default function AI() {
         id="ai.smartTips"
         title="AI Smart Tips"
       >
-        <AISmartTipsPanel isPro={isPro} />
+        <AISmartTipsPanel isPro={IS_PRO} />
       </CollapseSection>
 
-      {/* ========================= HEATMAP TEASER (NO COLLAPSE) ========================= */}
+      {/* ========================= HEATMAP (TEASER) ========================= */}
       <div className="collapse-card">
         <div className="collapse-header">
           Heatmap & Hot/Cold Zones
         </div>
         <div className="collapse-content">
           <LockedTeaser
-            locked={!isPro}
+            locked={!IS_PRO}
             cta="Unlock PRO to see all hot & cold zones and understand number ranges."
           >
-            <HeatmapPreview isPro={isPro} />
+            <HeatmapPreview isPro={IS_PRO} />
           </LockedTeaser>
         </div>
       </div>
