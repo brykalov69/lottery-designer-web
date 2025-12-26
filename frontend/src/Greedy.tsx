@@ -2,15 +2,16 @@ import CollapseSection from "./components/CollapseSection";
 import DataInputPanel from "./components/DataInputPanel";
 import ExportPanel from "./components/ExportPanel";
 import HelpTip from "./components/HelpTip";
+
 import { runGreedy } from "./api/greedy";
 import { useSessionStore } from "./stores/useSessionStore";
+import { IS_PRO } from "./config/flags";
 
 import { track } from "./utils/analytics";
 
-
 export default function Greedy() {
   const session = useSessionStore();
-  const { greedy, isPro, openProModal } = session;
+  const { greedy, openProModal } = session;
 
   const input = greedy.input;
   const result = greedy.result;
@@ -20,7 +21,7 @@ export default function Greedy() {
   ========================= */
 
   const setMode = (mode: "classic" | "fast" | "hybrid") => {
-    if ((mode === "fast" || mode === "hybrid") && !isPro) {
+    if ((mode === "fast" || mode === "hybrid") && !IS_PRO) {
       openProModal(
         mode === "fast" ? "greedy_fast" : "greedy_hybrid"
       );
@@ -56,11 +57,11 @@ export default function Greedy() {
       });
 
       session.setGreedyResult(res);
-      track("greedy_run", {
-  mode: input.mode,
-  systemSize: res?.system?.length ?? 0,
-});
 
+      track("greedy_run", {
+        mode: input.mode,
+        systemSize: res?.system?.length ?? 0,
+      });
     } catch (e: any) {
       session.setGreedyError(e?.message ?? "Greedy failed");
     }
@@ -104,7 +105,8 @@ export default function Greedy() {
       </CollapseSection>
 
       {/* MODE SELECTION */}
-      <CollapseSection id="greedy.mode"
+      <CollapseSection
+        id="greedy.mode"
         title={
           <>
             Mode Selection
@@ -115,10 +117,16 @@ Hybrid (PRO): balance between speed and coverage."
             />
           </>
         }
-        subtitle={!isPro ? "Fast & Hybrid are PRO features" : undefined}
+        subtitle={!IS_PRO ? "Fast & Hybrid are PRO features" : undefined}
         defaultOpen
       >
-        <div style={{ display: "flex", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <button
             className={
               input.mode === "classic"
@@ -138,7 +146,7 @@ Hybrid (PRO): balance between speed and coverage."
             }
             onClick={() => setMode("fast")}
           >
-            Fast {!isPro && "🔒"}
+            Fast {!IS_PRO && "🔒"}
           </button>
 
           <button
@@ -149,11 +157,11 @@ Hybrid (PRO): balance between speed and coverage."
             }
             onClick={() => setMode("hybrid")}
           >
-            Hybrid {!isPro && "🔒"}
+            Hybrid {!IS_PRO && "🔒"}
           </button>
         </div>
 
-        {!isPro && (
+        {!IS_PRO && (
           <div style={{ fontSize: 12, color: "#9AA0AA", marginTop: 6 }}>
             Advanced Greedy modes provide faster convergence
             and improved coverage efficiency.
