@@ -11,9 +11,9 @@ import AIQuality from "./AIQuality";
 
 import ProModal from "./components/ProModal";
 import { useSessionStore } from "./stores/useSessionStore";
+import { IS_PRO } from "./config/flags";
 
 import Landing from "./Landing";
-
 
 // -----------------------------
 // NAV TABS
@@ -22,13 +22,13 @@ function NavTabs() {
   const location = useLocation();
 
   const tabs = [
-    { path: "/generator", label: "Generator" },
-    { path: "/history", label: "Historical Data" },
-    { path: "/analytics", label: "Analytics" },
-    { path: "/ai", label: "AI Insights" },
-    { path: "/greedy", label: "Greedy Optimizer" },
-    { path: "/budget", label: "Smart Budget" },
-    { path: "/ai_quality", label: "AI Quality" },
+    { path: "/generator", label: "Generator", pro: false },
+    { path: "/history", label: "Historical Data", pro: false },
+    { path: "/analytics", label: "Analytics", pro: false },
+    { path: "/ai", label: "AI Insights", pro: true },
+    { path: "/greedy", label: "Greedy Optimizer", pro: true },
+    { path: "/budget", label: "Smart Budget", pro: true },
+    { path: "/ai_quality", label: "AI Quality", pro: true },
   ];
 
   return (
@@ -42,7 +42,7 @@ function NavTabs() {
               to={t.path}
               className={`nav-tab ${active ? "active" : ""}`}
             >
-              {t.label}
+              {t.label} {!IS_PRO && t.pro && "🔒"}
             </Link>
           );
         })}
@@ -55,9 +55,6 @@ function NavTabs() {
 // ROOT
 // -----------------------------
 export default function Root() {
- 
-
-  // 🔑 PRO MODAL STATE
   const { proModal, closeProModal } = useSessionStore();
 
   return (
