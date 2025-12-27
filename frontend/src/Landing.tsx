@@ -5,7 +5,8 @@ export default function Landing() {
     <>
       {/* 1. HERO */}
       <section style={{ maxWidth: 900, margin: "0 auto", padding: "40px 20px" }}>
-        <h1>Stop letting a machine pick your lottery numbers.</h1>
+       <h1>Lottery System Generator & Analysis Platform</h1>
+        <h2>Stop letting a machine pick your lottery numbers.</h2>
         <p style={{ color: "#9AA0AA", maxWidth: 720 }}>
           Most lottery tickets today are generated in one click — fast, random,
           and opaque. LotteryDesigner helps you understand how combinations are
